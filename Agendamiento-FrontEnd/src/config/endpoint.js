@@ -3,12 +3,21 @@
  * Lista centralizada de las rutas de la API (sin la URL base).
  */
 export const API_ENDPOINTS = {
-    TURNOS: '/turnos/',  //Mapea a Turnos
-    PACIENTES: '/pacientes/', //Mapea a Pacientes
-    PROFESIONALES: '/profesionales/', //Mapea a Profesionales
-    REPORTES_MEDICOS: '/reportesMedicos/', //Mapea a Reportes Médicos
-    HISTORIALES_CLINICOS: '/historialesClinicos/', //Mapea a Historiales Clínicos
-    EMPLEADOS: '/empleados/', //Mapea a Empleados
-    DISPONIBILIDADES: '/disponibilidades/' //Mapea a Disponibilidades
-    //Meter login, registro, logout 
+    TURNOS: '/turnos/',
+    PACIENTES: '/pacientes/',
+    PROFESIONALES: '/profesionales/',
+    REPORTES_MEDICOS: '/reportesMedicos/',
+    HISTORIALES_CLINICOS: '/historialesClinicos/',
+    EMPLEADOS: '/empleados/',
+    DISPONIBILIDADES: '/disponibilidades/'
+};
+
+/**
+ * @enum {string} AUTH_ENDPOINTS
+ * Endpoints de autenticación (fuera del prefijo /api)
+ */
+export const AUTH_ENDPOINTS = {
+    LOGIN: '/auth/api/login/',
+    LOGOUT: '/auth/api/logout/',
+    REFRESH_TOKEN: '/auth/api/token/refresh/'
 };

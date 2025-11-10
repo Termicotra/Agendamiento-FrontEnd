@@ -8,24 +8,23 @@ import Button from '@mui/material/Button';
 import Alert from '@mui/material/Alert';
 import CircularProgress from '@mui/material/CircularProgress';
 import AddIcon from '@mui/icons-material/Add';
-import CheckCircleIcon from '@mui/icons-material/CheckCircle';
-import VisibilityIcon from '@mui/icons-material/Visibility';
-import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
+import DescriptionIcon from '@mui/icons-material/Description';
+import AssignmentIcon from '@mui/icons-material/Assignment';
+import EventAvailableIcon from '@mui/icons-material/EventAvailable';
 import apiClient from '../../config/apiClient';
 import { API_ENDPOINTS } from '../../config/endpoint';
-import { TURNO_CONFIG, TURNO_TABLE_COLUMNS } from '../../config/formConfig';
+import { PROFESIONAL_CONFIG, PROFESIONAL_TABLE_COLUMNS } from '../../config/formConfig';
 import DynamicTable from '../common/DynamicTable';
 import ConfirmDialog from '../common/ConfirmDialog';
 
-export default function ListarTurnos() {
+export default function ListarProfesionales() {
     const navigate = useNavigate();
     const [data, setData] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [confirmDialog, setConfirmDialog] = useState({ open: false, id: null });
-    const [showCompleted, setShowCompleted] = useState(false);
 
-    const config = TURNO_CONFIG;
+    const config = PROFESIONAL_CONFIG;
 
     useEffect(() => {
         fetchData();
@@ -63,40 +62,36 @@ export default function ListarTurnos() {
     };
 
     const handleEdit = (id) => {
-        navigate(`/turnos/editar/${id}`);
+        navigate(`/profesionales/editar/${id}`);
     };
 
-    const handleComplete = async (id) => {
-        try {
-            await apiClient.patch(`${API_ENDPOINTS[config.endpoint]}${id}/`, { estado: 'Completado' });
-            // Actualizar el estado local
-            setData(data.map(item => 
-                item[config.idField] === id 
-                    ? { ...item, estado: 'Completado' } 
-                    : item
-            ));
-            setError(null);
-        } catch (err) {
-            setError('Error al marcar el turno como completado');
-            console.error('Error:', err);
-        }
+    const handleViewHistoriales = (id) => {
+        navigate(`/profesionales/${id}/historiales`);
     };
 
-    const toggleShowCompleted = () => {
-        setShowCompleted(!showCompleted);
+    const handleViewReportes = (id) => {
+        navigate(`/profesionales/${id}/reportes`);
     };
 
-    // Filtrar datos según el estado de showCompleted
-    const filteredData = showCompleted 
-        ? data.filter(item => item.estado === 'Completado')
-        : data.filter(item => item.estado !== 'Completado');
+    const handleViewDisponibilidad = (id) => {
+        navigate(`/profesionales/${id}/disponibilidad`);
+    };
 
     const customActions = [
         {
-            icon: <CheckCircleIcon fontSize="small" />,
-            onClick: handleComplete,
-            title: 'Marcar como Completado',
-            condition: (row) => row.estado !== 'Completado' // Solo mostrar si no está completado
+            icon: <DescriptionIcon fontSize="small" />,
+            onClick: handleViewHistoriales,
+            title: 'Ver Historiales Clínicos'
+        },
+        {
+            icon: <AssignmentIcon fontSize="small" />,
+            onClick: handleViewReportes,
+            title: 'Ver Reportes Médicos'
+        },
+        {
+            icon: <EventAvailableIcon fontSize="small" />,
+            onClick: handleViewDisponibilidad,
+            title: 'Ver Disponibilidad'
         }
     ];
 
@@ -116,38 +111,27 @@ export default function ListarTurnos() {
                         <Typography variant="h5" component="h2" sx={{ fontWeight: 700 }}>
                             {config.title}
                         </Typography>
-                        <Box sx={{ display: 'flex', gap: 2 }}>
-                            <Button
-                                variant="outlined"
-                                startIcon={showCompleted ? <VisibilityOffIcon /> : <VisibilityIcon />}
-                                onClick={toggleShowCompleted}
-                                disableRipple
-                                sx={{ '&:hover': { bgcolor: 'transparent' } }}
-                            >
-                                {showCompleted ? 'Ocultar Completados' : 'Mostrar Completados'}
-                            </Button>
-                            <Button
-                                variant="contained"
-                                startIcon={<AddIcon />}
-                                onClick={() => navigate('/turnos/crear')}
-                                disableRipple
-                                disableElevation
-                                sx={{ '&:hover': { bgcolor: 'primary.main', boxShadow: 'none', color: 'inherit' } }}
-                            >
-                                {config.createButtonText}
-                            </Button>
-                        </Box>
+                        <Button
+                            variant="contained"
+                            startIcon={<AddIcon />}
+                            onClick={() => navigate('/profesionales/crear')}
+                            disableRipple
+                            disableElevation
+                            sx={{ '&:hover': { bgcolor: 'primary.main', boxShadow: 'none', color: 'inherit' } }}
+                        >
+                            {config.createButtonText}
+                        </Button>
                     </Box>
 
                     {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
 
                     <DynamicTable
-                        columns={TURNO_TABLE_COLUMNS}
-                        data={filteredData}
+                        columns={PROFESIONAL_TABLE_COLUMNS}
+                        data={data}
                         idField={config.idField}
                         onEdit={handleEdit}
                         onDelete={handleDelete}
-                        emptyMessage={showCompleted ? 'No hay turnos completados' : config.emptyMessage}
+                        emptyMessage={config.emptyMessage}
                         customActions={customActions}
                     />
                 </CardContent>
@@ -157,7 +141,7 @@ export default function ListarTurnos() {
                 open={confirmDialog.open}
                 onClose={() => setConfirmDialog({ open: false, id: null })}
                 onConfirm={confirmDelete}
-                title="Eliminar Turno"
+                title="Eliminar Profesional"
                 message={config.deleteConfirmMessage}
                 confirmText="Eliminar"
                 cancelText="Cancelar"

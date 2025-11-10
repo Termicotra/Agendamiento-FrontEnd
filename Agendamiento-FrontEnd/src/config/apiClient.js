@@ -29,8 +29,35 @@ const apiClient = axios.create({
     headers: {
         'Content-Type': 'application/json',
     },
-    // Opcional: configurar un timeout
     timeout: 5000, 
+});
+
+/**
+ * Interceptor para agregar el token JWT automáticamente en cada petición.
+ */
+apiClient.interceptors.request.use(
+    (config) => {
+        const token = localStorage.getItem('jwt');
+        if (token) {
+            config.headers.Authorization = `Bearer ${token}`;
+        }
+        return config;
+    },
+    (error) => {
+        return Promise.reject(error);
+    }
+);
+
+/**
+ * Instancia de Axios para endpoints de autenticación (sin el prefijo /api).
+ */
+export const authClient = axios.create({
+    baseURL: API_BASE_URL,
+    headers: {
+        'Content-Type': 'application/json',
+    },
+    timeout: 10000,
+    withCredentials: false,
 });
 
 export default apiClient;

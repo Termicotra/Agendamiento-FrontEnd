@@ -42,33 +42,30 @@ const modules = [
 
 export default function Dashboard() {
   return (
-    <Box sx={{ minHeight: '100vh', bgcolor: 'background.default', py: 6 }}>
-      <Box sx={{ maxWidth: 1200, mx: 'auto', px: 2 }}>
-        <Typography variant="h3" component="h2" align="center" gutterBottom sx={{ fontWeight: 700 }}>
-          Dashboard
+    <Box sx={{ minHeight: 'calc(100vh - 64px)', display: 'flex', alignItems: 'flex-start', justifyContent: 'center', p: 2, mt: 8, pt: 4 }}>
+      <Box sx={{ maxWidth: 1200 }}>
+        <Typography variant="h4" component="h2" sx={{ fontWeight: 700, textAlign: 'center', mb: 4 }}>
+          Menú Principal
         </Typography>
-
-        <Grid container spacing={4}>
+        <Grid container spacing={4} justifyContent="center">
           {modules.map((module) => {
             const IconComp = module.icon;
             return (
               <Grid item xs={12} sm={6} md={3} key={module.title}>
                 <Card elevation={3} sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-                  <CardContent sx={{ textAlign: 'center', flexGrow: 1 }}>
-                    <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>
-                      <Avatar sx={{ bgcolor: 'primary.main', width: 64, height: 64 }}>
-                        <IconComp sx={{ color: 'primary.contrastText' }} />
-                      </Avatar>
-                    </Box>
-                    <Typography variant="h6" component="h3" sx={{ fontWeight: 600, mb: 1, textAlign: 'center' }}>
+                  <CardContent sx={{ flexGrow: 1, textAlign: 'center' }}>
+                    <Avatar sx={{ bgcolor: 'primary.main', width: 64, height: 64, mx: 'auto', mb: 2 }}>
+                      <IconComp />
+                    </Avatar>
+                    <Typography variant="h6" component="h3" sx={{ fontWeight: 600, mb: 1 }}>
                       {module.title}
                     </Typography>
-                    <Typography variant="body2" color="text.secondary" align="center">
+                    <Typography variant="body2" color="text.secondary">
                       {module.description}
                     </Typography>
                   </CardContent>
-                  <CardActions sx={{ justifyContent: 'center', pb: 3 }}>
-                    <Button component={Link} to={module.href} variant="contained" color="primary">
+                  <CardActions sx={{ justifyContent: 'center', pb: 2 }}>
+                    <Button component={Link} to={module.href} variant="contained" disableRipple disableElevation sx={{ '&:hover': { bgcolor: 'primary.main', boxShadow: 'none', color: 'inherit' } }}>
                       Ver {module.title}
                     </Button>
                   </CardActions>
