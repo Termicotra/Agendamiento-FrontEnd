@@ -47,14 +47,14 @@ export default function Dashboard() {
         <Typography variant="h4" component="h2" sx={{ fontWeight: 700, textAlign: 'center', mb: 4 }}>
           Menú Principal
         </Typography>
-        <Grid container spacing={4} justifyContent="center">
+        <Grid container spacing={4} justifyContent="center" alignItems="stretch">
           {modules.map((module) => {
             const IconComp = module.icon;
             return (
-              <Grid item xs={12} sm={6} md={3} key={module.title}>
-                <Card elevation={3} sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-                  <CardContent sx={{ flexGrow: 1, textAlign: 'center' }}>
-                    <Avatar sx={{ bgcolor: 'primary.main', width: 64, height: 64, mx: 'auto', mb: 2 }}>
+              <Grid item xs={12} sm={6} md={3} key={module.title} sx={{ display: 'flex' }}>
+                <Card elevation={3} sx={{ width: '100%', minWidth: 260, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                  <CardContent sx={{ flexGrow: 1, textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+                    <Avatar sx={{ bgcolor: 'primary.main', width: 64, height: 64, mb: 2 }}>
                       <IconComp />
                     </Avatar>
                     <Typography variant="h6" component="h3" sx={{ fontWeight: 600, mb: 1 }}>

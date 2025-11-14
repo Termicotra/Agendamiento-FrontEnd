@@ -282,63 +282,63 @@ export const PROFESIONAL_FIELDS = [
     label: 'Cédula de Identidad',
     type: 'text',
     required: true,
-    grid: { xs: 12, sm: 6 }
+    grid: { xs: 12, sm: 4 }
   },
   {
     name: 'nombre',
     label: 'Nombre',
     type: 'text',
     required: true,
-    grid: { xs: 12, sm: 6 }
+    grid: { xs: 12, sm: 4 }
   },
   {
     name: 'apellido',
     label: 'Apellido',
     type: 'text',
     required: true,
-    grid: { xs: 12, sm: 6 }
+    grid: { xs: 12, sm: 4 }
   },
   {
     name: 'fecha_nacimiento',
     label: 'Fecha de Nacimiento',
     type: 'date',
     required: true,
-    grid: { xs: 12, sm: 6 }
+    grid: { xs: 12, sm: 4 }
   },
   {
     name: 'especialidad',
     label: 'Especialidad',
     type: 'text',
     required: true,
-    grid: { xs: 12, sm: 6 }
+    grid: { xs: 12, sm: 4 }
   },
   {
     name: 'registro_profesional',
     label: 'Registro Profesional',
     type: 'text',
     required: true,
-    grid: { xs: 12, sm: 6 }
+    grid: { xs: 12, sm: 4 }
   },
   {
     name: 'telefono',
     label: 'Teléfono',
     type: 'tel',
     required: true,
-    grid: { xs: 12, sm: 6 }
+    grid: { xs: 12, sm: 4 }
   },
   {
     name: 'direccion',
     label: 'Dirección',
     type: 'text',
     required: false,
-    grid: { xs: 12, sm: 6 }
+    grid: { xs: 12, sm: 4 }
   },
   {
     name: 'otro_contacto',
     label: 'Otro Contacto',
     type: 'text',
     required: false,
-    grid: { xs: 12 }
+    grid: { xs: 12, sm: 4 }
   }
 ];
 

@@ -110,7 +110,7 @@ export default function FormularioPaciente() {
                         </Box>
                     ) : (
                         <Box component="form" onSubmit={handleSubmit}>
-                            <Grid container spacing={2}>
+                            <Grid container spacing={3}>
                                 {PACIENTE_FIELDS.map((field) => (
                                     <DynamicField
                                         key={field.name}

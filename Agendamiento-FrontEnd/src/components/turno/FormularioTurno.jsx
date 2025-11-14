@@ -165,7 +165,7 @@ export default function FormularioTurno() {
                         </Box>
                     ) : (
                         <Box component="form" onSubmit={handleSubmit}>
-                            <Grid container spacing={2}>
+                            <Grid container spacing={3}>
                                 {TURNO_FIELDS.map((field) => (
                                     <DynamicField
                                         key={field.name}
