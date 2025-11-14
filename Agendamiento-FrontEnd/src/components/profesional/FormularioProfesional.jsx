@@ -110,7 +110,7 @@ export default function FormularioProfesional() {
                         </Box>
                     ) : (
                         <Box component="form" onSubmit={handleSubmit}>
-                            <Grid container spacing={2}>
+                            <Grid container spacing={3}>
                                 {PROFESIONAL_FIELDS.map((field) => (
                                     <DynamicField
                                         key={field.name}

@@ -106,7 +106,7 @@ export default function DynamicField({ field, value, onChange, disabled, options
   };
 
   return (
-    <Grid item {...grid}>
+    <Grid item {...grid} sx={{ minHeight: 80, minWidth: 180, display: 'flex', alignItems: 'center' }}>
       {renderField()}
     </Grid>
   );

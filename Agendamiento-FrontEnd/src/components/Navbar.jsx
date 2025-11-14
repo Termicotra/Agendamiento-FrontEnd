@@ -37,10 +37,15 @@ export default function Navbar() {
   ];
 
   const handleLogout = async () => {
-    const token = localStorage.getItem('jwt');
-    if (token) {
+    const accessToken = localStorage.getItem('jwt');
+    const refreshToken = localStorage.getItem('refresh');
+    if (accessToken && refreshToken) {
       try {
-        await authClient.post(AUTH_ENDPOINTS.LOGOUT, { token });
+        await authClient.post(
+          AUTH_ENDPOINTS.LOGOUT,
+          { refresh: refreshToken },
+          { headers: { Authorization: `Bearer ${accessToken}` } }
+        );
       } catch (e) {
         console.log('Error en logout:', e);
       }

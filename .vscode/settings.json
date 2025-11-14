@@ -1,0 +1,6 @@
+{
+    "sonarlint.connectedMode.project": {
+        "connectionId": "termicotra",
+        "projectKey": "Termicotra_Sistema-Agendamiento-Medico-PP1"
+    }
+}
