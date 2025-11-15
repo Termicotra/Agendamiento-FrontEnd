@@ -64,12 +64,15 @@ export default function ListarTurnos() {
             const response = await apiClient.get(API_ENDPOINTS[config.endpoint]);
             let turnos = response.data;
 
-            // Si es paciente, filtrar solo sus turnos
+            // Filtrar solo turnos activos (excluyendo pendientes)
+            turnos = turnos.filter(turno => turno.estado === 'Activo');
+
+            // Si es paciente, filtrar solo sus turnos activos
             if (isPaciente && pacienteId) {
                 turnos = turnos.filter(turno => 
-                    turno.paciente === pacienteId || 
+                    (turno.paciente === pacienteId || 
                     turno.paciente?.id === pacienteId || 
-                    turno.paciente?.id_paciente === pacienteId
+                    turno.paciente?.id_paciente === pacienteId)
                 );
             }
 
