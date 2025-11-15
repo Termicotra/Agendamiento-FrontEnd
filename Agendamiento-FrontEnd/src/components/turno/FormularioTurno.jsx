@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
@@ -13,11 +14,14 @@ import apiClient from '../../config/apiClient';
 import { API_ENDPOINTS } from '../../config/endpoint';
 import { TURNO_CONFIG, TURNO_FIELDS } from '../../config/formConfig';
 import DynamicField from '../common/DynamicField';
+import { authService } from '../../services/authService';
 
 export default function FormularioTurno() {
     const navigate = useNavigate();
     const { id } = useParams();
+    const { hasRole } = useAuth();
     const isEdit = Boolean(id);
+    const isPaciente = hasRole('pacientes');
 
     const config = TURNO_CONFIG;
     
@@ -38,11 +42,20 @@ export default function FormularioTurno() {
     const [loading, setLoading] = useState(false);
     const [loadingData, setLoadingData] = useState(isEdit);
     const [error, setError] = useState('');
+    const [especialidadSeleccionada, setEspecialidadSeleccionada] = useState('');
+    const [especialidadesDisponibles, setEspecialidadesDisponibles] = useState([]);
+    const [todosLosProfesionales, setTodosLosProfesionales] = useState([]);
 
     useEffect(() => {
         const initialize = async () => {
             // Primero cargar las opciones, luego los datos
             await loadFieldOptions();
+            
+            // Si es paciente, auto-completar el campo paciente
+            if (isPaciente && !isEdit) {
+                await autoCompletarPaciente();
+            }
+            
             if (isEdit) {
                 await fetchData();
             }
@@ -59,6 +72,20 @@ export default function FormularioTurno() {
             const promises = optionsToLoad.map(async (field) => {
                 try {
                     const response = await apiClient.get(API_ENDPOINTS[field.endpoint]);
+                    
+                    // Guardar todos los profesionales para filtrado posterior
+                    if (field.name === 'profesional_id') {
+                        setTodosLosProfesionales(response.data);
+                        
+                        // Extraer especialidades únicas
+                        const especialidades = [...new Set(
+                            response.data
+                                .map(prof => prof.especialidad)
+                                .filter(Boolean)
+                        )].sort();
+                        setEspecialidadesDisponibles(especialidades);
+                    }
+                    
                     return {
                         fieldName: field.name,
                         options: response.data.map(item => ({
@@ -82,6 +109,25 @@ export default function FormularioTurno() {
         } catch (err) {
             console.error('Error loading options:', err);
             setOptionsLoaded(true); // Marcar como cargado incluso si hay error
+        }
+    };
+
+    const autoCompletarPaciente = async () => {
+        try {
+            const profile = await authService.getProfile();
+            if (profile.perfil_data?.ci) {
+                const pacientesResponse = await apiClient.get(API_ENDPOINTS.PACIENTES);
+                const paciente = pacientesResponse.data.find(p => p.ci === profile.perfil_data.ci);
+                if (paciente) {
+                    const pacienteId = paciente.id || paciente.id_paciente;
+                    setFormData(prev => ({
+                        ...prev,
+                        paciente_id: pacienteId
+                    }));
+                }
+            }
+        } catch (err) {
+            console.error('Error al auto-completar paciente:', err);
         }
     };
 
@@ -122,6 +168,19 @@ export default function FormularioTurno() {
 
     const handleChange = (e) => {
         const { name, value, type, checked } = e.target;
+        
+        // Manejar cambio de especialidad
+        if (name === 'especialidad') {
+            setEspecialidadSeleccionada(value);
+            // Limpiar selección de profesional cuando cambia la especialidad
+            setFormData({
+                ...formData,
+                profesional_id: ''
+            });
+            setError('');
+            return;
+        }
+        
         setFormData({
             ...formData,
             [name]: type === 'checkbox' ? checked : value
@@ -129,20 +188,70 @@ export default function FormularioTurno() {
         setError('');
     };
 
+    // Obtener opciones de profesionales filtradas por especialidad
+    const getProfesionalesFiltrados = () => {
+        if (!especialidadSeleccionada) {
+            return fieldOptions.profesional_id || [];
+        }
+        
+        const profesionalesFiltrados = todosLosProfesionales
+            .filter(prof => prof.especialidad === especialidadSeleccionada)
+            .map(prof => ({
+                value: prof.id_profesional,
+                label: `${prof.nombre} ${prof.apellido} - ${prof.especialidad}`
+            }));
+        
+        return profesionalesFiltrados;
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
         setError('');
-
         try {
+            let dataToSend = { ...formData };
+            if (!isEdit && isPaciente) {
+                dataToSend = {
+                    ...formData,
+                    empleado_id: 2
+                };
+            }
             if (isEdit) {
-                await apiClient.put(`${API_ENDPOINTS[config.endpoint]}${id}/`, formData);
+                await apiClient.put(`${API_ENDPOINTS[config.endpoint]}${id}/`, dataToSend);
             } else {
-                await apiClient.post(API_ENDPOINTS[config.endpoint], formData);
+                await apiClient.post(API_ENDPOINTS[config.endpoint], dataToSend);
             }
             navigate('/turnos');
         } catch (err) {
-            setError(err.response?.data?.detail || `Error al guardar el ${config.entityName.toLowerCase()}`);
+            // Manejar errores de validación del backend
+            if (err.response?.data) {
+                const errorData = err.response.data;
+                let errorMessage = '';
+                
+                // Errores generales (non_field_errors)
+                if (errorData.non_field_errors && Array.isArray(errorData.non_field_errors)) {
+                    errorMessage = errorData.non_field_errors.join('. ');
+                }
+                // Errores específicos de campos
+                else if (typeof errorData === 'object') {
+                    const fieldErrors = Object.entries(errorData)
+                        .filter(([key]) => key !== 'detail')
+                        .map(([key, value]) => {
+                            const fieldLabel = TURNO_FIELDS.find(f => f.name === key)?.label || key;
+                            const errorMsg = Array.isArray(value) ? value.join(', ') : value;
+                            return `${fieldLabel}: ${errorMsg}`;
+                        });
+                    errorMessage = fieldErrors.length > 0 ? fieldErrors.join('. ') : '';
+                }
+                // Error genérico (detail)
+                if (!errorMessage && errorData.detail) {
+                    errorMessage = errorData.detail;
+                }
+                
+                setError(errorMessage || `Error al guardar el ${config.entityName.toLowerCase()}`);
+            } else {
+                setError(`Error al guardar el ${config.entityName.toLowerCase()}`);
+            }
             console.error('Error:', err);
         } finally {
             setLoading(false);
@@ -166,16 +275,69 @@ export default function FormularioTurno() {
                     ) : (
                         <Box component="form" onSubmit={handleSubmit}>
                             <Grid container spacing={3}>
-                                {TURNO_FIELDS.map((field) => (
+                                {/* Campo paciente */}
+                                {TURNO_FIELDS.filter(f => f.name === 'paciente_id').map((field) => {
+                                    let isDisabled = loading;
+                                    if (isPaciente) isDisabled = true;
+                                    let fieldOptionsToUse = field.options || fieldOptions[field.name];
+                                    return (
+                                        <DynamicField
+                                            key={field.name}
+                                            field={field}
+                                            value={formData[field.name]}
+                                            onChange={handleChange}
+                                            disabled={isDisabled}
+                                            options={fieldOptionsToUse}
+                                        />
+                                    );
+                                })}
+                                {/* Campo especialidad para filtrar profesionales */}
+                                <Grid item xs={12} sm={6}>
                                     <DynamicField
-                                        key={field.name}
-                                        field={field}
-                                        value={formData[field.name]}
+                                        field={{
+                                            name: 'especialidad',
+                                            label: 'Especialidad',
+                                            type: 'select',
+                                            required: false,
+                                            grid: { xs: 12, sm: 6 },
+                                            options: especialidadesDisponibles.map(esp => ({
+                                                value: esp,
+                                                label: esp
+                                            }))
+                                        }}
+                                        value={especialidadSeleccionada}
                                         onChange={handleChange}
                                         disabled={loading}
-                                        options={field.options || fieldOptions[field.name]}
+                                        options={especialidadesDisponibles.map(esp => ({
+                                            value: esp,
+                                            label: esp
+                                        }))}
                                     />
-                                ))}
+                                </Grid>
+                                {/* El resto de los campos, ocultando empleado_id, estado y modalidad para pacientes */}
+                                {TURNO_FIELDS.filter(f => f.name !== 'paciente_id').map((field) => {
+                                    if (isPaciente && ['empleado_id', 'estado', 'modalidad'].includes(field.name)) {
+                                        return null;
+                                    }
+                                    let isDisabled = loading;
+                                    if (field.name === 'profesional_id' && !especialidadSeleccionada) {
+                                        isDisabled = true;
+                                    }
+                                    let fieldOptionsToUse = field.options || fieldOptions[field.name];
+                                    if (field.name === 'profesional_id') {
+                                        fieldOptionsToUse = getProfesionalesFiltrados();
+                                    }
+                                    return (
+                                        <DynamicField
+                                            key={field.name}
+                                            field={field}
+                                            value={formData[field.name]}
+                                            onChange={handleChange}
+                                            disabled={isDisabled}
+                                            options={fieldOptionsToUse}
+                                        />
+                                    );
+                                })}
                             </Grid>
 
                             <CardActions sx={{ justifyContent: 'flex-end', gap: 1, mt: 3, px: 0 }}>

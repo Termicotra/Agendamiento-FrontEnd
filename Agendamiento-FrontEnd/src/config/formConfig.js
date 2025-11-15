@@ -56,7 +56,6 @@ export const TURNO_FIELDS = [
     grid: { xs: 12, sm: 6 },
     options: [
       { value: 'Pendiente', label: 'Pendiente' },
-      { value: 'Confirmado', label: 'Confirmado' },
       { value: 'Cancelado', label: 'Cancelado' },
       { value: 'Completado', label: 'Completado' },
       { value: 'Activo', label: 'Activo' }
@@ -364,5 +363,226 @@ export const PROFESIONAL_CONFIG = {
   deleteConfirmMessage: '¿Estás seguro de eliminar este profesional?',
   emptyMessage: 'No hay profesionales registrados',
   defaultValues: {}
+};
+
+// ============================================
+// CONFIGURACIÓN DE HISTORIALES CLÍNICOS
+// ============================================
+
+export const HISTORIAL_FIELDS = [
+  {
+    name: 'paciente_id',
+    label: 'Paciente',
+    type: 'select',
+    required: true,
+    grid: { xs: 12, sm: 6 },
+    endpoint: 'PACIENTES',
+    idField: 'id_paciente',
+    displayFields: ['nombre', 'apellido']
+  },
+  {
+    name: 'profesional_id',
+    label: 'Profesional',
+    type: 'select',
+    required: true,
+    grid: { xs: 12, sm: 6 },
+    endpoint: 'PROFESIONALES',
+    idField: 'id_profesional',
+    displayFields: ['nombre', 'apellido', 'especialidad']
+  },
+  {
+    name: 'fecha',
+    label: 'Fecha',
+    type: 'date',
+    required: true,
+    grid: { xs: 12, sm: 6 }
+  },
+  {
+    name: 'hora',
+    label: 'Hora',
+    type: 'time',
+    required: true,
+    grid: { xs: 12, sm: 6 }
+  },
+  {
+    name: 'razon',
+    label: 'Razón',
+    type: 'text',
+    required: true,
+    grid: { xs: 12 },
+    maxLength: 512
+  },
+  {
+    name: 'descripcion',
+    label: 'Descripción',
+    type: 'textarea',
+    required: true,
+    grid: { xs: 12 },
+    rows: 4,
+    maxLength: 512
+  }
+];
+
+export const HISTORIAL_TABLE_COLUMNS = [
+  { field: 'id_historial', label: 'ID', align: 'center' },
+  { field: 'fecha', label: 'Fecha', align: 'left' },
+  { field: 'hora', label: 'Hora', align: 'left' },
+  { field: 'razon', label: 'Razón', align: 'left' },
+  { field: 'profesional', label: 'Profesional', align: 'left', nested: ['nombre', 'apellido'] },
+];
+
+export const HISTORIAL_CONFIG = {
+  entityName: 'Historial Clínico',
+  entityNamePlural: 'Historiales Clínicos',
+  endpoint: 'HISTORIALES_CLINICOS',
+  idField: 'id_historial',
+  title: 'Historiales Clínicos',
+  createButtonText: 'Nuevo Historial',
+  createTitle: 'Crear Nuevo Historial Clínico',
+  editTitle: 'Editar Historial Clínico',
+  deleteConfirmMessage: '¿Estás seguro de eliminar este historial clínico?',
+  emptyMessage: 'No hay historiales clínicos registrados',
+  defaultValues: {
+    fecha: new Date().toISOString().split('T')[0],
+    hora: new Date().toTimeString().split(' ')[0].substring(0, 5)
+  }
+};
+
+// ============================================
+// CONFIGURACIÓN DE REPORTES MÉDICOS
+// ============================================
+
+export const REPORTE_FIELDS = [
+  {
+    name: 'paciente_id',
+    label: 'Paciente',
+    type: 'select',
+    required: true,
+    grid: { xs: 12, sm: 6 },
+    endpoint: 'PACIENTES',
+    idField: 'id_paciente',
+    displayFields: ['nombre', 'apellido']
+  },
+  {
+    name: 'profesional_id',
+    label: 'Profesional',
+    type: 'select',
+    required: true,
+    grid: { xs: 12, sm: 6 },
+    endpoint: 'PROFESIONALES',
+    idField: 'id_profesional',
+    displayFields: ['nombre', 'apellido', 'especialidad']
+  },
+  {
+    name: 'fecha',
+    label: 'Fecha',
+    type: 'date',
+    required: true,
+    grid: { xs: 12 }
+  },
+  {
+    name: 'descripcion',
+    label: 'Descripción',
+    type: 'textarea',
+    required: true,
+    grid: { xs: 12 },
+    rows: 4,
+    maxLength: 512
+  }
+];
+
+export const REPORTE_TABLE_COLUMNS = [
+  { field: 'id_reporte', label: 'ID', align: 'center' },
+  { field: 'fecha', label: 'Fecha', align: 'left' },
+  { field: 'profesional', label: 'Profesional', align: 'left', nested: ['nombre', 'apellido'] },
+  { field: 'descripcion', label: 'Descripción', align: 'left' },
+];
+
+export const REPORTE_CONFIG = {
+  entityName: 'Reporte Médico',
+  entityNamePlural: 'Reportes Médicos',
+  endpoint: 'REPORTES_MEDICOS',
+  idField: 'id_reporte',
+  title: 'Reportes Médicos',
+  createButtonText: 'Nuevo Reporte',
+  createTitle: 'Crear Nuevo Reporte Médico',
+  editTitle: 'Editar Reporte Médico',
+  deleteConfirmMessage: '¿Estás seguro de eliminar este reporte médico?',
+  emptyMessage: 'No hay reportes médicos registrados',
+  defaultValues: {
+    fecha: new Date().toISOString().split('T')[0]
+  }
+};
+
+// ==============================
+// CONFIGURACIÓN DE DISPONIBILIDAD
+// ==============================
+
+export const DISPONIBILIDAD_FIELDS = [
+  {
+    name: 'dia',
+    label: 'Día de la Semana',
+    type: 'select',
+    required: true,
+    grid: { xs: 12 },
+    options: [
+      { value: 'Lunes', label: 'Lunes' },
+      { value: 'Martes', label: 'Martes' },
+      { value: 'Miercoles', label: 'Miércoles' },
+      { value: 'Jueves', label: 'Jueves' },
+      { value: 'Viernes', label: 'Viernes' },
+      { value: 'Sabado', label: 'Sábado' },
+      { value: 'Domingo', label: 'Domingo' }
+    ]
+  },
+  {
+    name: 'hora_inicio',
+    label: 'Hora Inicio',
+    type: 'time',
+    required: true,
+    grid: { xs: 12, sm: 6 }
+  },
+  {
+    name: 'hora_fin',
+    label: 'Hora Fin',
+    type: 'time',
+    required: true,
+    grid: { xs: 12, sm: 6 }
+  },
+  {
+    name: 'activo',
+    label: 'Estado',
+    type: 'select',
+    required: true,
+    grid: { xs: 12 },
+    options: [
+      { value: true, label: 'Activo' },
+      { value: false, label: 'Inactivo' }
+    ]
+  }
+];
+
+export const DISPONIBILIDAD_TABLE_COLUMNS = [
+  { field: 'id_disponibilidad', label: 'ID', align: 'left' },
+  { field: 'dia', label: 'Día', align: 'left' },
+  { field: 'hora_inicio', label: 'Hora Inicio', align: 'left' },
+  { field: 'hora_fin', label: 'Hora Fin', align: 'left' },
+  { field: 'activo', label: 'Estado', align: 'left' }
+];
+
+export const DISPONIBILIDAD_CONFIG = {
+  entityName: 'Disponibilidad',
+  entityNamePlural: 'Disponibilidades',
+  endpoint: 'DISPONIBILIDADES',
+  idField: 'id_disponibilidad',
+  title: 'Gestión de Disponibilidad',
+  createButtonText: 'Nueva Disponibilidad',
+  createTitle: 'Crear Nueva Disponibilidad',
+  editTitle: 'Editar Disponibilidad',
+  deleteConfirmMessage: '¿Estás seguro de eliminar esta disponibilidad?',
+  emptyMessage: 'No hay disponibilidades registradas',
+  defaultValues: {
+    activo: true
+  }
 };
 

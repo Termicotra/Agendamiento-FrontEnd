@@ -9,10 +9,11 @@ import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
 import Avatar from '@mui/material/Avatar';
 import Alert from '@mui/material/Alert';
+import Link from '@mui/material/Link';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
-import { authClient } from '../../config/apiClient';
-import { AUTH_ENDPOINTS } from '../../config/endpoint';
 import { useAuth } from '../../context/AuthContext';
+import { authService } from '../../services/authService';
+import { formatApiErrors } from '../../utils/errorHandler';
 
 export default function Login() {
   const navigate = useNavigate();
@@ -38,32 +39,17 @@ export default function Login() {
     setError('');
 
     try {
-      const response = await authClient.post(AUTH_ENDPOINTS.LOGIN, {
-        username: formData.username,
-        password: formData.password
-      });
-
-      const accessToken = response.data.access || response.data.token || response.data.access_token;
-      const refreshToken = response.data.refresh || response.data.refresh_token;
+      // Usar el servicio de autenticación
+      const userData = await authService.login(formData.username, formData.password);
       
-      if (!accessToken) {
-        setError('Error: No se recibió token de autenticación');
-        return;
-      }
+      // Actualizar el contexto de autenticación
+      const accessToken = localStorage.getItem('jwt');
+      login(accessToken, userData);
       
-      localStorage.setItem('jwt', accessToken);
-      if (refreshToken) {
-        localStorage.setItem('refresh_token', refreshToken);
-      }
-      
-      login(accessToken);
+      // Redirigir al dashboard principal (los módulos se mostrarán según permisos)
       navigate('/');
     } catch (err) {
-      if (err.response?.status === 401) {
-        setError('Usuario o contraseña incorrectos. Por favor, verifica tus credenciales.');
-      } else {
-        setError(err.response?.data?.detail || err.response?.data?.message || 'Error al iniciar sesión. Intenta nuevamente.');
-      }
+      setError(formatApiErrors(err));
     } finally {
       setLoading(false);
     }
@@ -85,7 +71,7 @@ export default function Login() {
             </Typography>
 
             {error && (
-              <Alert severity="error" sx={{ mb: 2 }}>
+              <Alert severity="error" sx={{ mb: 2, textAlign: 'left' }}>
                 {error}
               </Alert>
             )}
@@ -100,6 +86,7 @@ export default function Login() {
                 required
                 sx={{ mb: 2 }}
                 disabled={loading}
+                autoComplete="username"
               />
               <TextField
                 fullWidth
@@ -111,6 +98,7 @@ export default function Login() {
                 required
                 sx={{ mb: 3 }}
                 disabled={loading}
+                autoComplete="current-password"
               />
               <CardActions sx={{ justifyContent: 'center', p: 0, pb: 2 }}>
                 <Button
@@ -126,6 +114,13 @@ export default function Login() {
                 </Button>
               </CardActions>
             </Box>
+
+            <Typography variant="body2" sx={{ mt: 2 }}>
+              ¿No tienes cuenta?{' '}
+              <Link href="/register" underline="hover" sx={{ cursor: 'pointer' }}>
+                Solicitar registro
+              </Link>
+            </Typography>
           </CardContent>
         </Card>
       </Box>
