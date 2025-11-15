@@ -550,7 +550,7 @@ export const DISPONIBILIDAD_FIELDS = [
     grid: { xs: 12, sm: 6 }
   },
   {
-    name: 'activo',
+    name: 'esta_disponible',
     label: 'Estado',
     type: 'select',
     required: true,
@@ -567,7 +567,7 @@ export const DISPONIBILIDAD_TABLE_COLUMNS = [
   { field: 'dia', label: 'Día', align: 'left' },
   { field: 'hora_inicio', label: 'Hora Inicio', align: 'left' },
   { field: 'hora_fin', label: 'Hora Fin', align: 'left' },
-  { field: 'activo', label: 'Estado', align: 'left' }
+  { field: 'esta_disponible', label: 'Estado', align: 'left' }
 ];
 
 export const DISPONIBILIDAD_CONFIG = {
@@ -582,7 +582,7 @@ export const DISPONIBILIDAD_CONFIG = {
   deleteConfirmMessage: '¿Estás seguro de eliminar esta disponibilidad?',
   emptyMessage: 'No hay disponibilidades registradas',
   defaultValues: {
-    activo: true
+    esta_disponible: true
   }
 };
 

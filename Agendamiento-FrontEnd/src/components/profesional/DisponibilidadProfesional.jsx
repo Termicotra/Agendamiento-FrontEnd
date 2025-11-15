@@ -10,6 +10,8 @@ import CircularProgress from '@mui/material/CircularProgress';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import AddIcon from '@mui/icons-material/Add';
 import IconButton from '@mui/material/IconButton';
+import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
+import VisibilityIcon from '@mui/icons-material/Visibility';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import TextField from '@mui/material/TextField';
@@ -34,6 +36,23 @@ import DynamicField from '../common/DynamicField';
 import ConfirmDialog from '../common/ConfirmDialog';
 
 export default function DisponibilidadProfesional() {
+    // Toggle estado de disponibilidad
+    const handleToggleEstado = async (disp) => {
+        try {
+            // Solo enviar los campos necesarios al backend
+            const dataToSend = {
+                dia: disp.dia,
+                hora_inicio: disp.hora_inicio,
+                hora_fin: disp.hora_fin,
+                esta_disponible: !disp.esta_disponible,
+                profesional_id: disp.profesional?.id_profesional || disp.profesional_id
+            };
+            await apiClient.put(`${API_ENDPOINTS[DISPONIBILIDAD_CONFIG.endpoint]}${disp[DISPONIBILIDAD_CONFIG.idField]}/`, dataToSend);
+            await fetchData();
+        } catch (err) {
+            setError('No se pudo cambiar el estado');
+        }
+    };
     const navigate = useNavigate();
     const { id } = useParams();
     const [profesional, setProfesional] = useState(null);
@@ -194,6 +213,23 @@ export default function DisponibilidadProfesional() {
     };
 
     const confirmDelete = async () => {
+    // Toggle estado de disponibilidad
+    const handleToggleEstado = async (disp) => {
+        try {
+            // Solo enviar los campos necesarios al backend
+            const dataToSend = {
+                dia: disp.dia,
+                hora_inicio: disp.hora_inicio,
+                hora_fin: disp.hora_fin,
+                esta_disponible: !disp.esta_disponible,
+                profesional_id: disp.profesional?.id_profesional || disp.profesional_id
+            };
+            await apiClient.put(`${API_ENDPOINTS[DISPONIBILIDAD_CONFIG.endpoint]}${disp[DISPONIBILIDAD_CONFIG.idField]}/`, dataToSend);
+            await fetchData();
+        } catch (err) {
+            setError('No se pudo cambiar el estado');
+        }
+    };
         const dispId = confirmDialog.id;
         try {
             await apiClient.delete(`${API_ENDPOINTS[config.endpoint]}${dispId}/`);
@@ -218,31 +254,30 @@ export default function DisponibilidadProfesional() {
         <Box sx={{ p: 3, maxWidth: 1400, mx: 'auto' }}>
             <Card elevation={3}>
                 <CardContent>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
                         <Typography variant="h5" component="h2" sx={{ fontWeight: 700 }}>
                             {config.title} - Profesional
                         </Typography>
-                        <Box sx={{ display: 'flex', gap: 1 }}>
-                            <Button
-                                variant="contained"
-                                startIcon={<AddIcon />}
-                                onClick={() => handleOpenDialog()}
-                                disableRipple
-                                disableElevation
-                                sx={{ '&:hover': { bgcolor: 'primary.main', boxShadow: 'none', color: 'inherit' } }}
-                            >
-                                {config.createButtonText}
-                            </Button>
-                            <Button
-                                variant="outlined"
-                                startIcon={<ArrowBackIcon />}
-                                onClick={() => navigate('/profesionales')}
-                                disableRipple
-                                sx={{ '&:hover': { bgcolor: 'transparent' } }}
-                            >
-                                Volver
-                            </Button>
-                        </Box>
+                        <Button
+                            variant="contained"
+                            startIcon={<AddIcon />}
+                            onClick={() => handleOpenDialog()}
+                            disableRipple
+                            disableElevation
+                            sx={{ ml: 2, '&:hover': { bgcolor: 'primary.main', boxShadow: 'none', color: 'inherit' } }}
+                        >
+                            {config.createButtonText}
+                        </Button>
+                        <Box sx={{ flex: 1 }} />
+                        <Button
+                            variant="outlined"
+                            startIcon={<ArrowBackIcon />}
+                            onClick={() => navigate('/profesionales')}
+                            disableRipple
+                            sx={{ '&:hover': { bgcolor: 'transparent' } }}
+                        >
+                            Volver
+                        </Button>
                     </Box>
 
                     {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
@@ -313,8 +348,21 @@ export default function DisponibilidadProfesional() {
                                         <TableRow key={disp[config.idField]}>
                                             {DISPONIBILIDAD_TABLE_COLUMNS.map((column) => (
                                                 <TableCell key={column.field} align={column.align || 'left'}>
-                                                    {column.field === 'activo' 
-                                                        ? (disp[column.field] ? 'Activo' : 'Inactivo')
+                                                    {column.field === 'esta_disponible'
+                                                        ? (
+                                                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                                                {disp.esta_disponible ? 'Activo' : 'Inactivo'}
+                                                                <IconButton
+                                                                    size="small"
+                                                                    onClick={() => handleToggleEstado(disp)}
+                                                                    disableRipple
+                                                                    sx={{ '&:hover': { bgcolor: 'transparent' } }}
+                                                                    title={disp.esta_disponible ? 'Marcar como inactivo' : 'Marcar como activo'}
+                                                                >
+                                                                    {disp.esta_disponible ? <VisibilityOffIcon color="action" /> : <VisibilityIcon color="primary" />}
+                                                                </IconButton>
+                                                            </Box>
+                                                        )
                                                         : (disp[column.field] || '-')
                                                     }
                                                 </TableCell>
