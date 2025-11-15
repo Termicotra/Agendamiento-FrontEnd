@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: agendamiento-frontend
+    ports:
+      - "3000:80"
+    environment:
+      - NODE_ENV=production
+    networks:
+      - agendamiento-network
+    restart: unless-stopped
+
+networks:
+  agendamiento-network:
+    driver: bridge

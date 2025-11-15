@@ -37,6 +37,60 @@ npm run dev
 
 La aplicación estará disponible en `http://localhost:5173`
 
+## 🐳 Docker
+
+### Opción 1: Docker Compose (Recomendado)
+
+```bash
+# Construir y levantar el contenedor
+docker-compose up -d
+
+# Ver logs
+docker-compose logs -f
+
+# Detener el contenedor
+docker-compose down
+```
+
+La aplicación estará disponible en `http://localhost:3000`
+
+### Opción 2: Docker manual
+
+```bash
+# Construir la imagen
+docker build -t agendamiento-frontend .
+
+# Ejecutar el contenedor
+docker run -d -p 3000:80 --name agendamiento-frontend agendamiento-frontend
+
+# Ver logs
+docker logs -f agendamiento-frontend
+
+# Detener y eliminar
+docker stop agendamiento-frontend
+docker rm agendamiento-frontend
+```
+
+### Configuración Docker
+
+El proyecto incluye:
+- **Dockerfile**: Build multi-stage con Node.js 18 y Nginx Alpine
+- **docker-compose.yml**: Orquestación simplificada
+- **nginx.conf**: Configuración optimizada para React Router
+- **.dockerignore**: Exclusión de archivos innecesarios
+
+### Variables de entorno en Docker
+
+Para configurar la URL del backend en producción, modifica `docker-compose.yml`:
+
+```yaml
+environment:
+  - NODE_ENV=production
+  - VITE_API_URL=http://tu-backend:8000
+```
+
+**Nota**: Las variables `VITE_*` deben estar definidas en tiempo de build, por lo que deberás reconstruir la imagen si cambias la URL del backend.
+
 ## 📁 Estructura del Proyecto
 
 ```
@@ -211,12 +265,38 @@ npm run preview
 npm run lint
 ```
 
+## 🚢 Despliegue en Producción
+
+### Con Docker (Recomendado)
+
+```bash
+# 1. Configurar variables de entorno si es necesario
+# Editar docker-compose.yml o crear .env
+
+# 2. Construir y desplegar
+docker-compose up -d --build
+
+# 3. Verificar que esté corriendo
+docker-compose ps
+```
+
+### Sin Docker
+
+```bash
+# 1. Build de producción
+npm run build
+
+# 2. Servir con un servidor web (ej: serve)
+npx serve -s dist -l 3000
+```
+
 ## 🐛 Troubleshooting
 
 ### Error de conexión con el backend
 - Verificar que Django esté corriendo
 - Verificar CORS configurado en Django
 - Verificar URL en `apiClient.js`
+- Si usas Docker, verificar que ambos contenedores estén en la misma red
 
 ### Tokens expirados
 - Limpiar localStorage: `localStorage.clear()`
@@ -225,6 +305,12 @@ npm run lint
 ### No tienes permisos
 - Verificar que el usuario tenga el rol correcto
 - Verificar que el backend retorne permisos correctos
+
+### Problemas con Docker
+- **Puerto ocupado**: Cambiar el puerto en `docker-compose.yml` (ej: `"8080:80"`)
+- **Cambios no se reflejan**: Reconstruir imagen con `docker-compose up -d --build`
+- **Error de red**: Verificar que la red Docker esté creada correctamente
+- **Logs del contenedor**: `docker-compose logs -f frontend`
 
 ## 📦 Tecnologías Utilizadas
 
