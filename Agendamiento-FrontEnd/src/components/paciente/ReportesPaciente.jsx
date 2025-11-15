@@ -9,6 +9,7 @@ import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 import Alert from '@mui/material/Alert';
 import CircularProgress from '@mui/material/CircularProgress';
+import AddIcon from '@mui/icons-material/Add';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import apiClient from '../../config/apiClient';
 import { API_ENDPOINTS } from '../../config/endpoint';
@@ -16,59 +17,63 @@ import { REPORTE_CONFIG, REPORTE_TABLE_COLUMNS } from '../../config/formConfig';
 import DynamicTable from '../common/DynamicTable';
 import ConfirmDialog from '../common/ConfirmDialog';
 
-export default function ReportesProfesional() {
+export default function ReportesPaciente() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { canPerformAction } = usePermissions();
-  const [reportes, setReportes] = useState([]);
-  const [profesional, setProfesional] = useState(null);
+  const [data, setData] = useState([]);
+  const [paciente, setPaciente] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [confirmDialog, setConfirmDialog] = useState({ open: false, id: null });
 
   const config = REPORTE_CONFIG;
-
-  const canView = canPerformAction(MODULES.REPORTES_MEDICOS, ACTIONS.VIEW);
+  
+  // Verificar permisos
+  const canCreate = canPerformAction(MODULES.REPORTES_MEDICOS, ACTIONS.CREATE);
   const canEdit = canPerformAction(MODULES.REPORTES_MEDICOS, ACTIONS.EDIT);
   const canDelete = canPerformAction(MODULES.REPORTES_MEDICOS, ACTIONS.DELETE);
 
   useEffect(() => {
-    if (canView) {
-      fetchData();
-    }
+    fetchData();
+    fetchPaciente();
   }, [id]);
 
-  const fetchData = async () => {
-    setLoading(true);
+  const fetchPaciente = async () => {
     try {
-      // Cargar datos del profesional
-      const profesionalResponse = await apiClient.get(`${API_ENDPOINTS.PROFESIONALES}${id}/`);
-      setProfesional(profesionalResponse.data);
+      const response = await apiClient.get(`${API_ENDPOINTS.PACIENTES}${id}/`);
+      setPaciente(response.data);
+    } catch (err) {
+      console.error('Error al cargar paciente:', err);
+    }
+  };
 
-      // Cargar todos los reportes y filtrar por profesional
-      const reportesResponse = await apiClient.get(API_ENDPOINTS.REPORTES_MEDICOS);
-      const reportesProfesional = reportesResponse.data.filter(
-        r => r.profesional?.id_profesional == id
+  const fetchData = async () => {
+    try {
+      const response = await apiClient.get(API_ENDPOINTS[config.endpoint]);
+      // Filtrar solo los reportes de este paciente
+      const reportesPaciente = response.data.filter(
+        r => r.paciente?.id_paciente == id || r.paciente == id
       );
-      setReportes(reportesProfesional);
+      setData(reportesPaciente);
       setError(null);
     } catch (err) {
-      setError('Error al cargar los reportes médicos');
+      setError(`Error al cargar los ${config.entityNamePlural.toLowerCase()}`);
       console.error('Error:', err);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleDelete = (reporteId) => {
-    setConfirmDialog({ open: true, id: reporteId });
+  const handleDelete = async (id) => {
+    setConfirmDialog({ open: true, id });
   };
 
   const confirmDelete = async () => {
     const reporteId = confirmDialog.id;
     try {
       await apiClient.delete(`${API_ENDPOINTS[config.endpoint]}${reporteId}/`);
-      setReportes(reportes.filter(r => r[config.idField] !== reporteId));
+      setData(data.filter(item => item[config.idField] !== reporteId));
       setError(null);
       setConfirmDialog({ open: false, id: null });
     } catch (err) {
@@ -79,16 +84,8 @@ export default function ReportesProfesional() {
   };
 
   const handleEdit = (reporteId) => {
-    navigate(`/profesionales/${id}/reportes/editar/${reporteId}`);
+    navigate(`/pacientes/${id}/reportes/editar/${reporteId}`);
   };
-
-  if (!canView) {
-    return (
-      <Box sx={{ p: 3 }}>
-        <Alert severity="error">No tienes permisos para ver reportes médicos</Alert>
-      </Box>
-    );
-  }
 
   if (loading) {
     return (
@@ -102,31 +99,50 @@ export default function ReportesProfesional() {
     <Box sx={{ p: 3, maxWidth: 1400, mx: 'auto' }}>
       <Card elevation={3}>
         <CardContent>
-          <Box sx={{ mb: 3 }}>
+          <Box sx={{ mb: 2 }}>
             <Button
               startIcon={<ArrowBackIcon />}
-              onClick={() => navigate('/profesionales')}
+              onClick={() => navigate('/pacientes')}
               sx={{ mb: 2 }}
             >
-              Volver a Profesionales
+              Volver a Pacientes
             </Button>
-            <Typography variant="h5" sx={{ fontWeight: 700 }}>
-              {config.title} - {profesional?.nombre} {profesional?.apellido}
-            </Typography>
-            <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-              Mostrando reportes médicos donde {profesional?.nombre} {profesional?.apellido} es el profesional asignado
-            </Typography>
+          </Box>
+
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+            <Box>
+              <Typography variant="h5" component="h2" sx={{ fontWeight: 700 }}>
+                {config.title}
+              </Typography>
+              {paciente && (
+                <Typography variant="subtitle1" color="text.secondary">
+                  Paciente: {paciente.nombre} {paciente.apellido} - CI: {paciente.ci}
+                </Typography>
+              )}
+            </Box>
+            {canCreate && (
+              <Button
+                variant="contained"
+                startIcon={<AddIcon />}
+                onClick={() => navigate(`/pacientes/${id}/reportes/crear`)}
+                disableRipple
+                disableElevation
+                sx={{ '&:hover': { bgcolor: 'primary.main', boxShadow: 'none', color: 'inherit' } }}
+              >
+                {config.createButtonText}
+              </Button>
+            )}
           </Box>
 
           {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
 
           <DynamicTable
             columns={REPORTE_TABLE_COLUMNS}
-            data={reportes}
+            data={data}
             idField={config.idField}
             onEdit={canEdit ? handleEdit : null}
             onDelete={canDelete ? handleDelete : null}
-            emptyMessage={`No hay ${config.entityNamePlural.toLowerCase()} para este profesional`}
+            emptyMessage={config.emptyMessage}
           />
         </CardContent>
       </Card>
@@ -135,7 +151,7 @@ export default function ReportesProfesional() {
         open={confirmDialog.open}
         onClose={() => setConfirmDialog({ open: false, id: null })}
         onConfirm={confirmDelete}
-        title={`Eliminar ${config.entityName}`}
+        title="Eliminar Reporte Médico"
         message={config.deleteConfirmMessage}
         confirmText="Eliminar"
         cancelText="Cancelar"

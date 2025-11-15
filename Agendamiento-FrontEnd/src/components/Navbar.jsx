@@ -1,7 +1,8 @@
-import React from 'react';
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { usePermissions } from '../context/PermissionsContext';
+import { MODULES } from '../config/permissions';
 import AppBar from '@mui/material/AppBar';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
@@ -15,26 +16,83 @@ import ListItemButton from '@mui/material/ListItemButton';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import MenuIcon from '@mui/icons-material/Menu';
-import { Link } from 'react-router-dom';
 import PeopleIcon from '@mui/icons-material/People';
 import EventAvailableIcon from '@mui/icons-material/EventAvailable';
 import BadgeIcon from '@mui/icons-material/Badge';
 import WorkIcon from '@mui/icons-material/Work';
 import LocalHospitalIcon from '@mui/icons-material/LocalHospital';
+import AccountCircleIcon from '@mui/icons-material/AccountCircle';
+import AssignmentIcon from '@mui/icons-material/Assignment';
+import HistoryIcon from '@mui/icons-material/History';
+import DescriptionIcon from '@mui/icons-material/Description';
+import FolderSharedIcon from '@mui/icons-material/FolderShared';
+import Menu from '@mui/material/Menu';
+import MenuItem from '@mui/material/MenuItem';
+import Divider from '@mui/material/Divider';
 import { authClient } from '../config/apiClient';
 import { AUTH_ENDPOINTS } from '../config/endpoint';
 
 export default function Navbar() {
-  const { username, logout } = useAuth();
+  const { username, logout, hasRole } = useAuth();
+  const { hasModuleAccess } = usePermissions();
   const navigate = useNavigate();
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [anchorEl, setAnchorEl] = useState(null);
+  const menuOpen = Boolean(anchorEl);
 
-  const navLinks = [
-    { label: 'Pacientes', icon: <PeopleIcon />, to: '/pacientes' },
-    { label: 'Turnos', icon: <EventAvailableIcon />, to: '/turnos' },
-    { label: 'Profesionales', icon: <BadgeIcon />, to: '/profesionales' },
-    { label: 'Empleados', icon: <WorkIcon />, to: '/empleados' },
+  const handleMenuClick = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+  };
+
+  const handleProfileClick = () => {
+    handleMenuClose();
+    navigate('/profile');
+  };
+
+  const handleHistorialClick = () => {
+    handleMenuClose();
+    navigate('/mi-historial');
+  };
+
+  const handleSolicitudesClick = () => {
+    handleMenuClose();
+    navigate('/admin/solicitudes');
+  };
+
+  // Definir todos los links posibles con sus módulos requeridos
+  const allNavLinks = [
+    { 
+      label: 'Pacientes', 
+      icon: <PeopleIcon />,
+      to: '/pacientes',
+      module: MODULES.PACIENTES 
+    },
+    { 
+      label: 'Turnos', 
+      icon: <EventAvailableIcon />,
+      to: '/turnos',
+      module: MODULES.TURNOS 
+    },
+    { 
+      label: 'Profesionales', 
+      icon: <BadgeIcon />,
+      to: '/profesionales',
+      module: MODULES.PROFESIONALES 
+    },
+    { 
+      label: 'Empleados', 
+      icon: <WorkIcon />,
+      to: '/empleados',
+      module: MODULES.EMPLEADOS 
+    },
   ];
+
+  // Filtrar links basado en permisos
+  const navLinks = allNavLinks.filter(link => hasModuleAccess(link.module));
 
   const handleLogout = async () => {
     const accessToken = localStorage.getItem('jwt');
@@ -80,17 +138,59 @@ export default function Navbar() {
           </IconButton>
         </Box>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <Typography sx={{ color: 'white', fontWeight: 600 }}>{username || 'Usuario'}</Typography>
-          <Button
-            variant="outlined"
+          <IconButton
             color="inherit"
-            size="small"
+            onClick={handleMenuClick}
             disableRipple
-            sx={{ ml: 1, '&:hover': { bgcolor: 'transparent', borderColor: 'inherit', color: 'inherit' } }}
-            onClick={handleLogout}
+            sx={{ '&:hover': { bgcolor: 'transparent' } }}
           >
-            Cerrar sesión
-          </Button>
+            <AccountCircleIcon />
+          </IconButton>
+          <Typography sx={{ color: 'white', fontWeight: 600, display: { xs: 'none', sm: 'block' } }}>
+            {username || 'Usuario'}
+          </Typography>
+          
+          <Menu
+            anchorEl={anchorEl}
+            open={menuOpen}
+            onClose={handleMenuClose}
+            anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+            transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+          >
+            <MenuItem onClick={handleProfileClick}>
+              <ListItemIcon>
+                <AccountCircleIcon fontSize="small" />
+              </ListItemIcon>
+              Mi Perfil
+            </MenuItem>
+            {hasRole('pacientes') && (
+              <MenuItem onClick={handleHistorialClick}>
+                <ListItemIcon>
+                  <HistoryIcon fontSize="small" />
+                </ListItemIcon>
+                Mi Historial Médico
+              </MenuItem>
+            )}
+            {hasRole('administradores') && <Divider />}
+            {hasRole('administradores') && (
+              <MenuItem onClick={handleSolicitudesClick}>
+                <ListItemIcon>
+                  <AssignmentIcon fontSize="small" />
+                </ListItemIcon>
+                Solicitudes de Registro
+              </MenuItem>
+            )}
+            {hasRole('administradores') && (
+              <MenuItem onClick={() => { handleMenuClose(); navigate('/admin/solicitudes-turnos'); }}>
+                <ListItemIcon>
+                  <AssignmentIcon fontSize="small" />
+                </ListItemIcon>
+                Solicitudes de Turno
+              </MenuItem>
+            )}
+            <Divider />
+            <MenuItem onClick={handleLogout}>Cerrar sesión</MenuItem>
+          </Menu>
         </Box>
         {/* Drawer for mobile nav */}
         <Drawer anchor="right" open={drawerOpen} onClose={() => setDrawerOpen(false)}>

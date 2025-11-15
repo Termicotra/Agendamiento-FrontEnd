@@ -1,9 +1,20 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+/* eslint-disable react/prop-types */
+import { createContext, useContext, useState, useEffect, useMemo } from 'react';
+import { getUserInfoFromToken, isTokenExpired } from '../utils/jwt';
+import { authService } from '../services/authService';
 
 const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState({ username: '', authenticated: false });
+  const [user, setUser] = useState({ 
+    username: '', 
+    authenticated: false, 
+    roles: [],
+    userId: null,
+    email: '',
+    first_name: '',
+    last_name: ''
+  });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -14,35 +25,137 @@ export const AuthProvider = ({ children }) => {
     const token = localStorage.getItem('jwt');
     if (token) {
       try {
-        const payload = JSON.parse(atob(token.split('.')[1]));
-        setUser({ username: payload.username || payload.user_id, authenticated: true });
+        // Verificar si el token ha expirado
+        if (isTokenExpired(token)) {
+          console.warn('Token expirado');
+          logout();
+          return;
+        }
+
+        const userInfo = getUserInfoFromToken(token);
+        
+        // Intentar obtener datos completos del usuario del localStorage
+        const storedUser = authService.getCurrentUser();
+        
+        setUser({ 
+          username: userInfo.username, 
+          authenticated: true,
+          roles: userInfo.roles,
+          userId: userInfo.userId,
+          email: userInfo.email || storedUser?.email || '',
+          first_name: storedUser?.first_name || '',
+          last_name: storedUser?.last_name || ''
+        });
       } catch (e) {
-        setUser({ username: '', authenticated: false });
+        console.error('Error al verificar autenticación:', e);
+        setUser({ 
+          username: '', 
+          authenticated: false, 
+          roles: [], 
+          userId: null,
+          email: '',
+          first_name: '',
+          last_name: ''
+        });
       }
     } else {
-      setUser({ username: '', authenticated: false });
+      setUser({ 
+        username: '', 
+        authenticated: false, 
+        roles: [], 
+        userId: null,
+        email: '',
+        first_name: '',
+        last_name: ''
+      });
     }
     setLoading(false);
   };
 
-  const login = (token) => {
+  const login = (token, userData = null) => {
     localStorage.setItem('jwt', token);
     try {
-      const payload = JSON.parse(atob(token.split('.')[1]));
-      setUser({ username: payload.username || payload.user_id, authenticated: true });
+      const userInfo = getUserInfoFromToken(token);
+      
+      // Combinar información del token con datos adicionales
+      const completeUserData = {
+        username: userInfo.username,
+        authenticated: true,
+        roles: userInfo.roles,
+        userId: userInfo.userId,
+        email: userInfo.email || userData?.email || '',
+        first_name: userData?.first_name || '',
+        last_name: userData?.last_name || ''
+      };
+      
+      // Almacenar roles en localStorage
+      if (userInfo.roles && userInfo.roles.length > 0) {
+        localStorage.setItem('user_roles', JSON.stringify(userInfo.roles));
+      }
+      
+      setUser(completeUserData);
     } catch (e) {
-      setUser({ username: '', authenticated: false });
+      console.error('Error al procesar login:', e);
+      setUser({ 
+        username: '', 
+        authenticated: false, 
+        roles: [], 
+        userId: null,
+        email: '',
+        first_name: '',
+        last_name: ''
+      });
     }
   };
 
-  const logout = () => {
-    localStorage.removeItem('jwt');
-    localStorage.removeItem('refresh_token');
-    setUser({ username: '', authenticated: false });
+  const logout = async () => {
+    try {
+      await authService.logout();
+    } catch (error) {
+      console.error('Error durante logout:', error);
+    } finally {
+      setUser({ 
+        username: '', 
+        authenticated: false, 
+        roles: [], 
+        userId: null,
+        email: '',
+        first_name: '',
+        last_name: ''
+      });
+    }
   };
 
+  /**
+   * Verifica si el usuario tiene un rol específico
+   * @param {string} role - Nombre del rol a verificar
+   * @returns {boolean}
+   */
+  const hasRole = (role) => {
+    return user.roles.includes(role);
+  };
+
+  /**
+   * Verifica si el usuario tiene alguno de los roles especificados
+   * @param {string[]} roles - Array de roles
+   * @returns {boolean}
+   */
+  const hasAnyRole = (roles) => {
+    if (!roles || roles.length === 0) return false;
+    return roles.some(role => user.roles.includes(role));
+  };
+
+  const value = useMemo(() => ({ 
+    ...user, 
+    login, 
+    logout, 
+    loading,
+    hasRole,
+    hasAnyRole
+  }), [user, loading]);
+
   return (
-    <AuthContext.Provider value={{ ...user, login, logout, loading }}>
+    <AuthContext.Provider value={value}>
       {children}
     </AuthContext.Provider>
   );

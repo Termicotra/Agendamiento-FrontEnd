@@ -9,6 +9,7 @@ import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 import Alert from '@mui/material/Alert';
 import CircularProgress from '@mui/material/CircularProgress';
+import AddIcon from '@mui/icons-material/Add';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import apiClient from '../../config/apiClient';
 import { API_ENDPOINTS } from '../../config/endpoint';
@@ -16,59 +17,63 @@ import { HISTORIAL_CONFIG, HISTORIAL_TABLE_COLUMNS } from '../../config/formConf
 import DynamicTable from '../common/DynamicTable';
 import ConfirmDialog from '../common/ConfirmDialog';
 
-export default function HistorialesProfesional() {
+export default function HistorialesPaciente() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { canPerformAction } = usePermissions();
-  const [historiales, setHistoriales] = useState([]);
-  const [profesional, setProfesional] = useState(null);
+  const [data, setData] = useState([]);
+  const [paciente, setPaciente] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [confirmDialog, setConfirmDialog] = useState({ open: false, id: null });
 
   const config = HISTORIAL_CONFIG;
-
-  const canView = canPerformAction(MODULES.HISTORIALES_CLINICOS, ACTIONS.VIEW);
+  
+  // Verificar permisos
+  const canCreate = canPerformAction(MODULES.HISTORIALES_CLINICOS, ACTIONS.CREATE);
   const canEdit = canPerformAction(MODULES.HISTORIALES_CLINICOS, ACTIONS.EDIT);
   const canDelete = canPerformAction(MODULES.HISTORIALES_CLINICOS, ACTIONS.DELETE);
 
   useEffect(() => {
-    if (canView) {
-      fetchData();
-    }
+    fetchData();
+    fetchPaciente();
   }, [id]);
 
-  const fetchData = async () => {
-    setLoading(true);
+  const fetchPaciente = async () => {
     try {
-      // Cargar datos del profesional
-      const profesionalResponse = await apiClient.get(`${API_ENDPOINTS.PROFESIONALES}${id}/`);
-      setProfesional(profesionalResponse.data);
+      const response = await apiClient.get(`${API_ENDPOINTS.PACIENTES}${id}/`);
+      setPaciente(response.data);
+    } catch (err) {
+      console.error('Error al cargar paciente:', err);
+    }
+  };
 
-      // Cargar todos los historiales y filtrar por profesional
-      const historialesResponse = await apiClient.get(API_ENDPOINTS.HISTORIALES_CLINICOS);
-      const historialesProfesional = historialesResponse.data.filter(
-        h => h.profesional?.id_profesional == id
+  const fetchData = async () => {
+    try {
+      const response = await apiClient.get(API_ENDPOINTS[config.endpoint]);
+      // Filtrar solo los historiales de este paciente
+      const historialesPaciente = response.data.filter(
+        h => h.paciente?.id_paciente == id || h.paciente == id
       );
-      setHistoriales(historialesProfesional);
+      setData(historialesPaciente);
       setError(null);
     } catch (err) {
-      setError('Error al cargar los historiales clínicos');
+      setError(`Error al cargar los ${config.entityNamePlural.toLowerCase()}`);
       console.error('Error:', err);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleDelete = (historialId) => {
-    setConfirmDialog({ open: true, id: historialId });
+  const handleDelete = async (id) => {
+    setConfirmDialog({ open: true, id });
   };
 
   const confirmDelete = async () => {
     const historialId = confirmDialog.id;
     try {
       await apiClient.delete(`${API_ENDPOINTS[config.endpoint]}${historialId}/`);
-      setHistoriales(historiales.filter(h => h[config.idField] !== historialId));
+      setData(data.filter(item => item[config.idField] !== historialId));
       setError(null);
       setConfirmDialog({ open: false, id: null });
     } catch (err) {
@@ -79,16 +84,8 @@ export default function HistorialesProfesional() {
   };
 
   const handleEdit = (historialId) => {
-    navigate(`/profesionales/${id}/historiales/editar/${historialId}`);
+    navigate(`/pacientes/${id}/historiales/editar/${historialId}`);
   };
-
-  if (!canView) {
-    return (
-      <Box sx={{ p: 3 }}>
-        <Alert severity="error">No tienes permisos para ver historiales clínicos</Alert>
-      </Box>
-    );
-  }
 
   if (loading) {
     return (
@@ -102,31 +99,50 @@ export default function HistorialesProfesional() {
     <Box sx={{ p: 3, maxWidth: 1400, mx: 'auto' }}>
       <Card elevation={3}>
         <CardContent>
-          <Box sx={{ mb: 3 }}>
+          <Box sx={{ mb: 2 }}>
             <Button
               startIcon={<ArrowBackIcon />}
-              onClick={() => navigate('/profesionales')}
+              onClick={() => navigate('/pacientes')}
               sx={{ mb: 2 }}
             >
-              Volver a Profesionales
+              Volver a Pacientes
             </Button>
-            <Typography variant="h5" sx={{ fontWeight: 700 }}>
-              {config.title} - {profesional?.nombre} {profesional?.apellido}
-            </Typography>
-            <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-              Mostrando historiales clínicos donde {profesional?.nombre} {profesional?.apellido} es el profesional asignado
-            </Typography>
+          </Box>
+
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+            <Box>
+              <Typography variant="h5" component="h2" sx={{ fontWeight: 700 }}>
+                {config.title}
+              </Typography>
+              {paciente && (
+                <Typography variant="subtitle1" color="text.secondary">
+                  Paciente: {paciente.nombre} {paciente.apellido} - CI: {paciente.ci}
+                </Typography>
+              )}
+            </Box>
+            {canCreate && (
+              <Button
+                variant="contained"
+                startIcon={<AddIcon />}
+                onClick={() => navigate(`/pacientes/${id}/historiales/crear`)}
+                disableRipple
+                disableElevation
+                sx={{ '&:hover': { bgcolor: 'primary.main', boxShadow: 'none', color: 'inherit' } }}
+              >
+                {config.createButtonText}
+              </Button>
+            )}
           </Box>
 
           {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
 
           <DynamicTable
             columns={HISTORIAL_TABLE_COLUMNS}
-            data={historiales}
+            data={data}
             idField={config.idField}
             onEdit={canEdit ? handleEdit : null}
             onDelete={canDelete ? handleDelete : null}
-            emptyMessage={`No hay ${config.entityNamePlural.toLowerCase()} para este profesional`}
+            emptyMessage={config.emptyMessage}
           />
         </CardContent>
       </Card>
@@ -135,7 +151,7 @@ export default function HistorialesProfesional() {
         open={confirmDialog.open}
         onClose={() => setConfirmDialog({ open: false, id: null })}
         onConfirm={confirmDelete}
-        title={`Eliminar ${config.entityName}`}
+        title="Eliminar Historial Clínico"
         message={config.deleteConfirmMessage}
         confirmText="Eliminar"
         cancelText="Cancelar"

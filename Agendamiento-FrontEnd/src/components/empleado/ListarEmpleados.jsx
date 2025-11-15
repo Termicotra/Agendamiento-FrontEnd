@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { usePermissions } from '../../context/PermissionsContext';
+import { MODULES, ACTIONS } from '../../config/permissions';
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
@@ -16,12 +18,18 @@ import ConfirmDialog from '../common/ConfirmDialog';
 
 export default function ListarEmpleados() {
     const navigate = useNavigate();
+    const { canPerformAction } = usePermissions();
     const [data, setData] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [confirmDialog, setConfirmDialog] = useState({ open: false, id: null });
 
     const config = EMPLEADO_CONFIG;
+    
+    // Verificar permisos
+    const canCreate = canPerformAction(MODULES.EMPLEADOS, ACTIONS.CREATE);
+    const canEdit = canPerformAction(MODULES.EMPLEADOS, ACTIONS.EDIT);
+    const canDelete = canPerformAction(MODULES.EMPLEADOS, ACTIONS.DELETE);
 
     useEffect(() => {
         fetchData();
@@ -78,16 +86,18 @@ export default function ListarEmpleados() {
                         <Typography variant="h5" component="h2" sx={{ fontWeight: 700 }}>
                             {config.title}
                         </Typography>
-                        <Button
-                            variant="contained"
-                            startIcon={<AddIcon />}
-                            onClick={() => navigate('/empleados/crear')}
-                            disableRipple
-                            disableElevation
-                            sx={{ '&:hover': { bgcolor: 'primary.main', boxShadow: 'none', color: 'inherit' } }}
-                        >
-                            {config.createButtonText}
-                        </Button>
+                        {canCreate && (
+                            <Button
+                                variant="contained"
+                                startIcon={<AddIcon />}
+                                onClick={() => navigate('/empleados/crear')}
+                                disableRipple
+                                disableElevation
+                                sx={{ '&:hover': { bgcolor: 'primary.main', boxShadow: 'none', color: 'inherit' } }}
+                            >
+                                {config.createButtonText}
+                            </Button>
+                        )}
                     </Box>
 
                     {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
@@ -96,8 +106,8 @@ export default function ListarEmpleados() {
                         columns={EMPLEADO_TABLE_COLUMNS}
                         data={data}
                         idField={config.idField}
-                        onEdit={handleEdit}
-                        onDelete={handleDelete}
+                        onEdit={canEdit ? handleEdit : null}
+                        onDelete={canDelete ? handleDelete : null}
                         emptyMessage={config.emptyMessage}
                     />
                 </CardContent>

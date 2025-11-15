@@ -1,5 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
+import { usePermissions } from '../../context/PermissionsContext';
+import { MODULES, ACTIONS } from '../../config/permissions';
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
@@ -16,25 +19,61 @@ import { API_ENDPOINTS } from '../../config/endpoint';
 import { TURNO_CONFIG, TURNO_TABLE_COLUMNS } from '../../config/formConfig';
 import DynamicTable from '../common/DynamicTable';
 import ConfirmDialog from '../common/ConfirmDialog';
+import { authService } from '../../services/authService';
 
 export default function ListarTurnos() {
     const navigate = useNavigate();
+    const { hasRole } = useAuth();
+    const { canPerformAction } = usePermissions();
     const [data, setData] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [confirmDialog, setConfirmDialog] = useState({ open: false, id: null });
     const [showCompleted, setShowCompleted] = useState(false);
+    const [pacienteId, setPacienteId] = useState(null);
 
     const config = TURNO_CONFIG;
+    const isPaciente = hasRole('pacientes');
+    
+    // Verificar permisos
+    const canCreate = canPerformAction(MODULES.TURNOS, ACTIONS.CREATE);
+    const canEdit = canPerformAction(MODULES.TURNOS, ACTIONS.EDIT);
+    const canDelete = canPerformAction(MODULES.TURNOS, ACTIONS.DELETE);
 
     useEffect(() => {
         fetchData();
-    }, []);
+    }, [pacienteId]);
 
     const fetchData = async () => {
         try {
+            // Si es paciente y aún no tenemos su ID, obtenerlo primero
+            if (isPaciente && !pacienteId) {
+                const profile = await authService.getProfile();
+                if (profile.perfil_data?.ci) {
+                    // Buscar el paciente por cédula
+                    const pacientesResponse = await apiClient.get(API_ENDPOINTS.PACIENTES);
+                    const paciente = pacientesResponse.data.find(p => p.ci === profile.perfil_data.ci);
+                    if (paciente) {
+                        const id = paciente.id || paciente.id_paciente;
+                        setPacienteId(id);
+                        return; // Salir aquí, el useEffect volverá a llamar cuando pacienteId cambie
+                    }
+                }
+            }
+
             const response = await apiClient.get(API_ENDPOINTS[config.endpoint]);
-            setData(response.data);
+            let turnos = response.data;
+
+            // Si es paciente, filtrar solo sus turnos
+            if (isPaciente && pacienteId) {
+                turnos = turnos.filter(turno => 
+                    turno.paciente === pacienteId || 
+                    turno.paciente?.id === pacienteId || 
+                    turno.paciente?.id_paciente === pacienteId
+                );
+            }
+
+            setData(turnos);
             setError(null);
         } catch (err) {
             setError(`Error al cargar los ${config.entityNamePlural.toLowerCase()}`);
@@ -87,18 +126,25 @@ export default function ListarTurnos() {
     };
 
     // Filtrar datos según el estado de showCompleted
-    const filteredData = showCompleted 
-        ? data.filter(item => item.estado === 'Completado')
-        : data.filter(item => item.estado !== 'Completado');
+    let filteredData;
+    if (isPaciente) {
+        filteredData = showCompleted
+            ? data.filter(item => item.estado === 'Completado')
+            : data.filter(item => item.estado !== 'Completado');
+    } else {
+        filteredData = showCompleted
+            ? data.filter(item => item.estado === 'Completado')
+            : data.filter(item => item.estado !== 'Completado');
+    }
 
-    const customActions = [
+    const customActions = canEdit ? [
         {
-            icon: <CheckCircleIcon fontSize="small" />,
+            icon: <CheckCircleIcon fontSize="small" color="success" />,
             onClick: handleComplete,
             title: 'Marcar como Completado',
             condition: (row) => row.estado !== 'Completado' // Solo mostrar si no está completado
         }
-    ];
+    ] : [];
 
     if (loading) {
         return (
@@ -117,25 +163,29 @@ export default function ListarTurnos() {
                             {config.title}
                         </Typography>
                         <Box sx={{ display: 'flex', gap: 2 }}>
-                            <Button
-                                variant="outlined"
-                                startIcon={showCompleted ? <VisibilityOffIcon /> : <VisibilityIcon />}
-                                onClick={toggleShowCompleted}
-                                disableRipple
-                                sx={{ '&:hover': { bgcolor: 'transparent' } }}
-                            >
-                                {showCompleted ? 'Ocultar Completados' : 'Mostrar Completados'}
-                            </Button>
-                            <Button
-                                variant="contained"
-                                startIcon={<AddIcon />}
-                                onClick={() => navigate('/turnos/crear')}
-                                disableRipple
-                                disableElevation
-                                sx={{ '&:hover': { bgcolor: 'primary.main', boxShadow: 'none', color: 'inherit' } }}
-                            >
-                                {config.createButtonText}
-                            </Button>
+                            {(isPaciente || !isPaciente) && (
+                                <Button
+                                    variant="outlined"
+                                    startIcon={showCompleted ? <VisibilityOffIcon /> : <VisibilityIcon />}
+                                    onClick={toggleShowCompleted}
+                                    disableRipple
+                                    sx={{ '&:hover': { bgcolor: 'transparent' } }}
+                                >
+                                    {showCompleted ? 'Ocultar Completados' : 'Mostrar Completados'}
+                                </Button>
+                            )}
+                            {canCreate && (
+                                <Button
+                                    variant="contained"
+                                    startIcon={<AddIcon />}
+                                    onClick={() => navigate('/turnos/crear')}
+                                    disableRipple
+                                    disableElevation
+                                    sx={{ '&:hover': { bgcolor: 'primary.main', boxShadow: 'none', color: 'inherit' } }}
+                                >
+                                    {config.createButtonText}
+                                </Button>
+                            )}
                         </Box>
                     </Box>
 
@@ -145,8 +195,8 @@ export default function ListarTurnos() {
                         columns={TURNO_TABLE_COLUMNS}
                         data={filteredData}
                         idField={config.idField}
-                        onEdit={handleEdit}
-                        onDelete={handleDelete}
+                        onEdit={canEdit ? handleEdit : null}
+                        onDelete={canDelete ? handleDelete : null}
                         emptyMessage={showCompleted ? 'No hay turnos completados' : config.emptyMessage}
                         customActions={customActions}
                     />

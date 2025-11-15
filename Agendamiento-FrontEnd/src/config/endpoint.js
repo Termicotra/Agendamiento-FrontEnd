@@ -19,5 +19,12 @@ export const API_ENDPOINTS = {
 export const AUTH_ENDPOINTS = {
     LOGIN: '/auth/api/login/',
     LOGOUT: '/auth/api/logout/',
-    REFRESH_TOKEN: '/auth/api/token/refresh/'
+    REFRESH_TOKEN: '/auth/api/token/refresh/',
+    REGISTER: '/auth/api/register/',
+    PROFILE: '/auth/api/perfil/',
+    CHANGE_PASSWORD: '/auth/api/change-password/',
+    PERMISSIONS: '/auth/api/permissions/',
+    SOLICITUDES: '/auth/api/solicitudes/',
+    SOLICITUD_APROBAR: (id) => `/auth/api/solicitudes/${id}/aprobar/`,
+    SOLICITUD_RECHAZAR: (id) => `/auth/api/solicitudes/${id}/rechazar/`
 };

@@ -1,16 +1,287 @@
-# React + Vite
+# 🏥 Sistema de Agendamiento Médico - Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Frontend desarrollado con React + Vite para el sistema de gestión médica.
 
-Currently, two official plugins are available:
+## 📋 Características Principales
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- ✅ **Autenticación JWT** con refresh automático
+- ✅ **Sistema de roles** (Pacientes, Profesionales, Empleados, Administradores)
+- ✅ **Sistema de permisos** granular por módulo y acción
+- ✅ **Gestión de solicitudes de registro** con aprobación de administrador
+- ✅ **Perfil de usuario** con cambio de contraseña
+- ✅ **Rutas protegidas** por rol y permiso
+- ✅ **Manejo centralizado de errores**
+- ✅ **UI con Material-UI**
 
-## React Compiler
+## 🚀 Inicio Rápido
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+### Prerrequisitos
 
-## Expanding the ESLint configuration
+- Node.js 16+
+- npm o yarn
+- Backend Django corriendo en `http://localhost:8000`
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+### Instalación
+
+```bash
+# Clonar el repositorio
+git clone <url-del-repo>
+cd Agendamiento-FrontEnd
+
+# Instalar dependencias
+npm install
+
+# Iniciar servidor de desarrollo
+npm run dev
+```
+
+La aplicación estará disponible en `http://localhost:5173`
+
+## 📁 Estructura del Proyecto
+
+```
+src/
+├── components/          # Componentes React
+│   ├── auth/           # Login, Register, Profile, ChangePassword
+│   ├── admin/          # SolicitudesManager
+│   ├── common/         # RoleProtection, PermissionProtection
+│   ├── dashboard/      # Dashboard principal
+│   ├── paciente/       # Gestión de pacientes
+│   ├── profesional/    # Gestión de profesionales
+│   ├── empleado/       # Gestión de empleados
+│   └── turno/          # Gestión de turnos
+├── config/             # Configuración de API y endpoints
+├── context/            # Contextos de React (Auth, Permissions)
+├── hooks/              # Custom hooks (useRoles, useUser)
+├── services/           # Servicios de API
+│   ├── authService.js          # ⭐ Autenticación
+│   ├── solicitudesService.js   # ⭐ Gestión de solicitudes
+│   └── permissionsService.js   # Permisos
+├── utils/              # Utilidades
+│   ├── errorHandler.js         # ⭐ Manejo de errores
+│   └── jwt.js                  # Decodificación JWT
+└── App.jsx             # Configuración de rutas
+```
+
+## 🔑 Características de Autenticación
+
+### Login
+- Usuario case-insensitive
+- Refresh automático de tokens cuando expiran
+- Redirección según rol del usuario
+- Ruta: `/login`
+
+### Registro
+- Solicitud de registro con aprobación de admin
+- Validación de CI existente
+- Contraseñas seguras (mín 8 caracteres)
+- Ruta: `/register`
+
+### Perfil
+- Vista completa de información del usuario
+- Datos diferenciados por tipo (Paciente/Profesional/Empleado)
+- Cambio de contraseña
+- Rutas: `/profile`, `/change-password`
+
+## 👥 Roles y Permisos
+
+### Roles Disponibles
+- **Pacientes**: Gestión de turnos propios, ver su historial
+- **Profesionales**: Gestión de turnos, historiales, reportes médicos
+- **Empleados**: Gestión de pacientes, profesionales, turnos
+- **Administradores**: Acceso completo + gestión de solicitudes
+
+### Protección de Rutas
+
+```jsx
+// Por rol
+<RoleProtectedRoute allowedRoles={['administradores']}>
+  <AdminPanel />
+</RoleProtectedRoute>
+
+// Por permiso
+<PermissionProtectedRoute permission="pacientes.create">
+  <CrearPaciente />
+</PermissionProtectedRoute>
+
+// Por módulo
+<PermissionProtectedRoute module="turnos">
+  <ListarTurnos />
+</PermissionProtectedRoute>
+```
+
+## 🛠️ Servicios Principales
+
+### authService
+```javascript
+import { authService } from './services/authService';
+
+// Login
+const userData = await authService.login('usuario', 'password');
+
+// Registro
+await authService.register('usuario', 'password', '12345678');
+
+// Obtener perfil
+const profile = await authService.getProfile();
+
+// Cambiar contraseña
+await authService.changePassword('old', 'new', 'confirm');
+
+// Logout
+await authService.logout();
+```
+
+### solicitudesService (Admin)
+```javascript
+import { solicitudesService } from './services/solicitudesService';
+
+// Listar solicitudes
+const data = await solicitudesService.listarSolicitudes('pendiente');
+
+// Aprobar solicitud
+await solicitudesService.aprobarSolicitud(1, 'pacientes');
+
+// Rechazar solicitud
+await solicitudesService.rechazarSolicitud(1);
+```
+
+## 📚 Documentación
+
+- **[FRONTEND_IMPLEMENTATION.md](./FRONTEND_IMPLEMENTATION.md)** - Resumen completo de la implementación
+- **[INTEGRATION_GUIDE.md](./INTEGRATION_GUIDE.md)** - Guía de integración y testing
+- **[FRONTEND_API_DOCUMENTATION.md](../Sistema-Agendamiento-Medico-PP1/FRONTEND_API_DOCUMENTATION.md)** - Documentación de la API del backend
+- **[PERMISSIONS_GUIDE.md](./PERMISSIONS_GUIDE.md)** - Guía de permisos
+- **[ROLES_AUTH_GUIDE.md](./ROLES_AUTH_GUIDE.md)** - Guía de roles y autenticación
+
+## 🧪 Testing
+
+### Test Manual
+
+1. **Registro**
+   - Ir a `/register`
+   - Completar formulario con CI válida
+   - Verificar mensaje de éxito
+
+2. **Aprobación (Admin)**
+   - Login como admin
+   - Ir a `/admin/solicitudes`
+   - Aprobar solicitud seleccionando rol
+
+3. **Login**
+   - Usar credenciales del usuario aprobado
+   - Verificar redirección según rol
+
+4. **Perfil**
+   - Ir a `/profile`
+   - Verificar información mostrada
+   - Cambiar contraseña en `/change-password`
+
+## ⚙️ Configuración
+
+### Variables de Entorno (opcional)
+
+Crear `.env` en la raíz:
+
+```env
+VITE_API_URL=http://localhost:8000
+```
+
+### Configuración de API
+
+Editar `src/config/apiClient.js`:
+
+```javascript
+const API_BASE_URL = 'http://localhost:8000';
+```
+
+## 🔧 Scripts Disponibles
+
+```bash
+# Desarrollo
+npm run dev
+
+# Build para producción
+npm run build
+
+# Preview del build
+npm run preview
+
+# Linting
+npm run lint
+```
+
+## 🐛 Troubleshooting
+
+### Error de conexión con el backend
+- Verificar que Django esté corriendo
+- Verificar CORS configurado en Django
+- Verificar URL en `apiClient.js`
+
+### Tokens expirados
+- Limpiar localStorage: `localStorage.clear()`
+- Volver a hacer login
+
+### No tienes permisos
+- Verificar que el usuario tenga el rol correcto
+- Verificar que el backend retorne permisos correctos
+
+## 📦 Tecnologías Utilizadas
+
+- **React** 18.3
+- **Vite** 6.0
+- **Material-UI** 6.1
+- **React Router** 7.0
+- **Axios** para peticiones HTTP
+
+## 👨‍💻 Desarrollo
+
+### Agregar nuevo componente
+
+```bash
+# Crear archivo
+src/components/nuevo/MiComponente.jsx
+
+# Agregar ruta en App.jsx
+<Route path="/mi-ruta" element={<MiComponente />} />
+```
+
+### Agregar nuevo servicio
+
+```javascript
+// src/services/miServicio.js
+import { apiClient } from '../config/apiClient';
+
+class MiServicio {
+  async getData() {
+    const response = await apiClient.get('/mi-endpoint/');
+    return response.data;
+  }
+}
+
+export const miServicio = new MiServicio();
+```
+
+## 🤝 Contribución
+
+1. Fork el proyecto
+2. Crear branch (`git checkout -b feature/nueva-funcionalidad`)
+3. Commit cambios (`git commit -m 'Agregar nueva funcionalidad'`)
+4. Push al branch (`git push origin feature/nueva-funcionalidad`)
+5. Crear Pull Request
+
+## 📄 Licencia
+
+Este proyecto es parte de un trabajo de Práctica Profesional.
+
+## 📞 Contacto
+
+Para dudas o problemas:
+1. Revisar documentación en `/docs`
+2. Verificar logs del navegador y backend
+3. Consultar guías de integración
+
+---
+
+**Última actualización**: 15 de Noviembre de 2025  
+**Versión**: 1.0.0

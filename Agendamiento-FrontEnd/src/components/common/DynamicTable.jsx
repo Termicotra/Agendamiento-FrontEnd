@@ -89,41 +89,49 @@ export default function DynamicTable({ columns, data, idField, onEdit, onDelete,
                   </TableCell>
                 ))}
                 <TableCell align="center">
-                  {customActions.map((action, index) => {
-                    // Si hay una condición, evaluarla; si no, mostrar siempre
-                    const shouldShow = action.condition ? action.condition(row) : true;
-                    
-                    if (!shouldShow) return null;
-                    
-                    return (
+                  <Box sx={{ display: 'flex', justifyContent: 'center', gap: 0.5 }}>
+                    {customActions.map((action, index) => {
+                      // Si hay una condición, evaluarla; si no, mostrar siempre
+                      const shouldShow = action.condition ? action.condition(row) : true;
+                      
+                      if (!shouldShow) return null;
+                      
+                      return (
+                        <IconButton
+                          key={index}
+                          size="small"
+                          onClick={() => action.onClick(row[idField])}
+                          disableRipple
+                          sx={{ '&:hover': { bgcolor: 'transparent' } }}
+                          title={action.title}
+                        >
+                          {action.icon}
+                        </IconButton>
+                      );
+                    })}
+                    {onEdit && (
                       <IconButton
-                        key={index}
                         size="small"
-                        onClick={() => action.onClick(row[idField])}
+                        onClick={() => onEdit(row[idField])}
                         disableRipple
                         sx={{ '&:hover': { bgcolor: 'transparent' } }}
-                        title={action.title}
+                        title="Editar"
                       >
-                        {action.icon}
+                        <EditIcon fontSize="small" color="primary" />
                       </IconButton>
-                    );
-                  })}
-                  <IconButton
-                    size="small"
-                    onClick={() => onEdit(row[idField])}
-                    disableRipple
-                    sx={{ '&:hover': { bgcolor: 'transparent' } }}
-                  >
-                    <EditIcon fontSize="small" />
-                  </IconButton>
-                  <IconButton
-                    size="small"
-                    onClick={() => onDelete(row[idField])}
-                    disableRipple
-                    sx={{ '&:hover': { bgcolor: 'transparent' } }}
-                  >
-                    <DeleteIcon fontSize="small" />
-                  </IconButton>
+                    )}
+                    {onDelete && (
+                      <IconButton
+                        size="small"
+                        onClick={() => onDelete(row[idField])}
+                        disableRipple
+                        sx={{ '&:hover': { bgcolor: 'transparent' } }}
+                        title="Eliminar"
+                      >
+                        <DeleteIcon fontSize="small" color="error" />
+                      </IconButton>
+                    )}
+                  </Box>
                 </TableCell>
               </TableRow>
             ))
