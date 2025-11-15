@@ -124,7 +124,14 @@ export default function Navbar() {
           </Typography>
         </Box>
         {/* Desktop nav links */}
-        <Box sx={{ display: { xs: 'none', md: 'flex' }, alignItems: 'center', gap: 2 }}>
+        <Box sx={{ 
+          display: { xs: 'none', md: 'flex' }, 
+          alignItems: 'center', 
+          gap: 2,
+          position: 'absolute',
+          left: '50%',
+          transform: 'translateX(-50%)'
+        }}>
           {navLinks.map(link => (
             <Button key={link.label} color="inherit" startIcon={link.icon} component={Link} to={link.to} disableRipple sx={{ '&:hover': { bgcolor: 'transparent', color: 'inherit' } }}>
               {link.label}
