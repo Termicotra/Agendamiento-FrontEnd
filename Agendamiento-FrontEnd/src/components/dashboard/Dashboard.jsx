@@ -88,10 +88,26 @@ export default function Dashboard() {
   const allVisibleModules = [...modules, ...additionalModules];
   
   return (
-  <Box sx={{ minHeight: '0', display: 'flex', alignItems: 'flex-start', justifyContent: 'center', p: 2, mt: 3, pt: 2 }}>
+    <Box sx={{ 
+      minHeight: 'calc(100vh - 64px)', 
+      display: 'flex', 
+      alignItems: 'center', 
+      justifyContent: 'center', 
+      p: 4,
+      bgcolor: 'background.default'
+    }}>
       <PermissionsDebug />
-      <Box sx={{ maxWidth: 1200 }}>
-        <Typography variant="h4" component="h2" sx={{ fontWeight: 700, textAlign: 'center', mb: 4 }}>
+      <Box sx={{ maxWidth: 1400, width: '100%' }}>
+        <Typography 
+          variant="h4" 
+          component="h2" 
+          sx={{ 
+            fontWeight: 700, 
+            textAlign: 'center', 
+            mb: 6,
+            color: 'text.primary'
+          }}
+        >
           Menú Principal
         </Typography>
         {allVisibleModules.length === 0 ? (
@@ -99,26 +115,111 @@ export default function Dashboard() {
             No tienes acceso a ningún módulo. Contacta con el administrador.
           </Typography>
         ) : (
-          <Grid container spacing={4} justifyContent="center" alignItems="stretch">
+          <Grid 
+            container 
+            spacing={3} 
+            justifyContent="center" 
+            alignItems="stretch"
+            sx={{ margin: '0 auto' }}
+          >
             {allVisibleModules.map((module) => {
               const IconComp = module.icon;
               return (
-                <Grid item xs={12} sm={6} md={3} key={module.title} sx={{ display: 'flex' }}>
-                  <Card elevation={3} sx={{ width: '100%', minWidth: 260, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-                    <CardContent sx={{ flexGrow: 1, textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-                      <Avatar sx={{ bgcolor: module.color || 'primary.main', width: 64, height: 64, mb: 2 }}>
-                        {/* Si el módulo tiene iconColor, usarlo */}
-                        {module.iconColor ? <IconComp sx={{ color: module.iconColor }} /> : <IconComp />}
+                <Grid 
+                  item 
+                  xs={12} 
+                  sm={6} 
+                  md={4} 
+                  lg={3} 
+                  key={module.title} 
+                  sx={{ 
+                    display: 'flex',
+                    justifyContent: 'center'
+                  }}
+                >
+                  <Card 
+                    elevation={3} 
+                    sx={{ 
+                      width: '100%',
+                      maxWidth: 280,
+                      minWidth: 280,
+                      height: 280,
+                      display: 'flex', 
+                      flexDirection: 'column', 
+                      justifyContent: 'space-between',
+                      transition: 'all 0.3s ease',
+                      '&:hover': {
+                        transform: 'translateY(-4px)',
+                        boxShadow: 6
+                      }
+                    }}
+                  >
+                    <CardContent 
+                      sx={{ 
+                        flexGrow: 1, 
+                        textAlign: 'center', 
+                        display: 'flex', 
+                        flexDirection: 'column', 
+                        alignItems: 'center', 
+                        justifyContent: 'center',
+                        p: 3
+                      }}
+                    >
+                      <Avatar 
+                        sx={{ 
+                          bgcolor: module.color || 'primary.main', 
+                          width: 72, 
+                          height: 72, 
+                          mb: 2 
+                        }}
+                      >
+                        {module.iconColor ? (
+                          <IconComp sx={{ fontSize: 40, color: module.iconColor }} />
+                        ) : (
+                          <IconComp sx={{ fontSize: 40 }} />
+                        )}
                       </Avatar>
-                      <Typography variant="h6" component="h3" sx={{ fontWeight: 600, mb: 1 }}>
+                      <Typography 
+                        variant="h6" 
+                        component="h3" 
+                        sx={{ 
+                          fontWeight: 600, 
+                          mb: 1.5,
+                          minHeight: '32px',
+                          display: 'flex',
+                          alignItems: 'center'
+                        }}
+                      >
                         {module.title}
                       </Typography>
-                      <Typography variant="body2" color="text.secondary">
+                      <Typography 
+                        variant="body2" 
+                        color="text.secondary"
+                        sx={{
+                          minHeight: '40px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          textAlign: 'center'
+                        }}
+                      >
                         {module.description}
                       </Typography>
                     </CardContent>
-                    <CardActions sx={{ justifyContent: 'center', pb: 2 }}>
-                      <Button component={Link} to={module.href} variant="contained" disableRipple disableElevation sx={{ '&:hover': { bgcolor: 'primary.main', boxShadow: 'none', color: 'inherit' } }}>
+                    <CardActions sx={{ justifyContent: 'center', pb: 2.5, px: 2 }}>
+                      <Button 
+                        component={Link} 
+                        to={module.href} 
+                        variant="contained" 
+                        fullWidth
+                        sx={{ 
+                          textTransform: 'none',
+                          fontWeight: 500,
+                          py: 1,
+                          '&:hover': { 
+                            boxShadow: 2
+                          } 
+                        }}
+                      >
                         Ver {module.title}
                       </Button>
                     </CardActions>
