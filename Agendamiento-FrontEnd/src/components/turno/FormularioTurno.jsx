@@ -228,20 +228,22 @@ export default function FormularioTurno() {
                 const errorData = err.response.data;
                 let errorMessage = '';
                 
-                // Errores generales (non_field_errors)
+                // Errores generales (non_field_errors) - incluye validación de turnos duplicados
                 if (errorData.non_field_errors && Array.isArray(errorData.non_field_errors)) {
                     errorMessage = errorData.non_field_errors.join('. ');
                 }
                 // Errores específicos de campos
-                else if (typeof errorData === 'object') {
+                else if (typeof errorData === 'object' && !errorData.detail) {
                     const fieldErrors = Object.entries(errorData)
-                        .filter(([key]) => key !== 'detail')
                         .map(([key, value]) => {
+                            if (key === 'non_field_errors') {
+                                return Array.isArray(value) ? value.join('. ') : value;
+                            }
                             const fieldLabel = TURNO_FIELDS.find(f => f.name === key)?.label || key;
                             const errorMsg = Array.isArray(value) ? value.join(', ') : value;
                             return `${fieldLabel}: ${errorMsg}`;
                         });
-                    errorMessage = fieldErrors.length > 0 ? fieldErrors.join('. ') : '';
+                    errorMessage = fieldErrors.join('. ');
                 }
                 // Error genérico (detail)
                 if (!errorMessage && errorData.detail) {
