@@ -1,4 +1,3 @@
-/* eslint-disable react/prop-types */
 import React from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
@@ -17,7 +16,6 @@ import BlockIcon from '@mui/icons-material/Block';
 export const RoleProtectedRoute = ({ 
   children, 
   allowedRoles = [], 
-  redirectTo = '/', 
   requireAll = false 
 }) => {
   const { authenticated, loading } = useAuth();

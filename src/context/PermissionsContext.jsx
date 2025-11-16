@@ -1,4 +1,3 @@
-/* eslint-disable react/prop-types */
 import React, { createContext, useContext, useState, useEffect, useMemo, useCallback } from 'react';
 import { permissionsService } from '../services/permissionsService';
 import { useAuth } from './AuthContext';

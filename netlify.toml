@@ -1,5 +1,5 @@
 [build]
-  base = "Agendamiento-FrontEnd"
+  base = "/"
   command = "npm run build"
   publish = "Agendamiento-FrontEnd/dist"
 

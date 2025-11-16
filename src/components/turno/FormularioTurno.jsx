@@ -63,9 +63,6 @@ export default function FormularioTurno() {
         initialize();
     }, [id]);
 
-    // Prevenir que se renderice el formulario hasta que las opciones estén cargadas en modo edición
-    const shouldShowForm = !isEdit || (isEdit && optionsLoaded && !loadingData);
-
     const loadFieldOptions = async () => {
         try {
             const optionsToLoad = TURNO_FIELDS.filter(field => field.endpoint);

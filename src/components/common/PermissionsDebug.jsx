@@ -1,4 +1,3 @@
-/* eslint-disable react/prop-types */
 import React, { useState } from 'react';
 import { Box, Paper, Typography, Button, Collapse, Chip, Divider } from '@mui/material';
 import { usePermissions } from '../../context/PermissionsContext';

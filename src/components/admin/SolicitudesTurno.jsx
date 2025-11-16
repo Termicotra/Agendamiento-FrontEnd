@@ -29,7 +29,8 @@ export default function SolicitudesTurno() {
       const response = await apiClient.get(`${API_ENDPOINTS.TURNOS}?estado=Pendiente`);
       setTurnos(response.data);
       setError(null);
-    } catch (err) {
+    } catch (error) {
+      console.error('Error al cargar las solicitudes de turno:', error);
       setError('Error al cargar las solicitudes de turno');
     } finally {
       setLoading(false);

@@ -1,4 +1,3 @@
-/* eslint-disable react/prop-types */
 import { createContext, useContext, useState, useEffect, useMemo } from 'react';
 import { getUserInfoFromToken, isTokenExpired } from '../utils/jwt';
 import { authService } from '../services/authService';
