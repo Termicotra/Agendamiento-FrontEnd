@@ -9,7 +9,8 @@ export default function useUser() {
       try {
         const payload = JSON.parse(atob(token.split('.')[1]));
         setUser({ username: payload.username || payload.user_id, authenticated: true });
-      } catch (e) {
+      } catch (error) {
+        console.error('Error parsing token:', error);
         setUser({ username: '', authenticated: false });
       }
     } else {
@@ -28,7 +29,8 @@ export default function useUser() {
     try {
       const payload = JSON.parse(atob(token.split('.')[1]));
       setUser({ username: payload.username || payload.user_id, authenticated: true });
-    } catch (e) {
+    } catch (error) {
+      console.error('Error parsing token during login:', error);
       setUser({ username: '', authenticated: false });
     }
   };

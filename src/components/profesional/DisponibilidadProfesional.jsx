@@ -36,23 +36,6 @@ import DynamicField from '../common/DynamicField';
 import ConfirmDialog from '../common/ConfirmDialog';
 
 export default function DisponibilidadProfesional() {
-    // Toggle estado de disponibilidad
-    const handleToggleEstado = async (disp) => {
-        try {
-            // Solo enviar los campos necesarios al backend
-            const dataToSend = {
-                dia: disp.dia,
-                hora_inicio: disp.hora_inicio,
-                hora_fin: disp.hora_fin,
-                esta_disponible: !disp.esta_disponible,
-                profesional_id: disp.profesional?.id_profesional || disp.profesional_id
-            };
-            await apiClient.put(`${API_ENDPOINTS[DISPONIBILIDAD_CONFIG.endpoint]}${disp[DISPONIBILIDAD_CONFIG.idField]}/`, dataToSend);
-            await fetchData();
-        } catch (err) {
-            setError('No se pudo cambiar el estado');
-        }
-    };
     const navigate = useNavigate();
     const { id } = useParams();
     const [profesional, setProfesional] = useState(null);
@@ -108,9 +91,9 @@ export default function DisponibilidadProfesional() {
             setDisponibilidad(disponibilidadResponse.data);
             
             setError(null);
-        } catch (err) {
+        } catch (error) {
             setError('Error al cargar la disponibilidad');
-            console.error('Error:', err);
+            console.error('Error:', error);
         } finally {
             setLoading(false);
         }
@@ -212,7 +195,6 @@ export default function DisponibilidadProfesional() {
         setConfirmDialog({ open: true, id: dispId });
     };
 
-    const confirmDelete = async () => {
     // Toggle estado de disponibilidad
     const handleToggleEstado = async (disp) => {
         try {
@@ -226,18 +208,21 @@ export default function DisponibilidadProfesional() {
             };
             await apiClient.put(`${API_ENDPOINTS[DISPONIBILIDAD_CONFIG.endpoint]}${disp[DISPONIBILIDAD_CONFIG.idField]}/`, dataToSend);
             await fetchData();
-        } catch (err) {
+        } catch (error) {
+            console.error('Error al cambiar estado:', error);
             setError('No se pudo cambiar el estado');
         }
     };
+
+    const confirmDelete = async () => {
         const dispId = confirmDialog.id;
         try {
             await apiClient.delete(`${API_ENDPOINTS[config.endpoint]}${dispId}/`);
             await fetchData();
             setConfirmDialog({ open: false, id: null });
-        } catch (err) {
+        } catch (error) {
             setError(`Error al eliminar ${config.entityName.toLowerCase()}`);
-            console.error('Error:', err);
+            console.error('Error:', error);
             setConfirmDialog({ open: false, id: null });
         }
     };
