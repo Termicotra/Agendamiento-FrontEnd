@@ -12,6 +12,7 @@ import Alert from '@mui/material/Alert';
 import CircularProgress from '@mui/material/CircularProgress';
 import AddIcon from '@mui/icons-material/Add';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import CancelIcon from '@mui/icons-material/Cancel';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import apiClient from '../../config/apiClient';
@@ -110,6 +111,7 @@ export default function ListarTurnos() {
 
     const handleComplete = async (id) => {
         try {
+            // Usar PATCH para solo actualizar el estado, sin validaciones
             await apiClient.patch(`${API_ENDPOINTS[config.endpoint]}${id}/`, { estado: 'Completado' });
             // Actualizar el estado local
             setData(data.map(item => 
@@ -121,6 +123,41 @@ export default function ListarTurnos() {
         } catch (err) {
             setError('Error al marcar el turno como completado');
             console.error('Error:', err);
+        }
+    };
+
+    const handleCancel = async (id) => {
+        try {
+            // Usar PATCH para solo actualizar el estado, sin validaciones
+            await apiClient.patch(`${API_ENDPOINTS[config.endpoint]}${id}/`, { estado: 'Cancelado' });
+            
+            // Actualizar el estado local
+            setData(data.map(item => 
+                item[config.idField] === id 
+                    ? { ...item, estado: 'Cancelado' } 
+                    : item
+            ));
+            setError(null);
+        } catch (error) {
+            console.error('Error al cancelar turno:', error);
+            if (error.response?.data) {
+                const errorData = error.response.data;
+                if (errorData.non_field_errors) {
+                    setError(errorData.non_field_errors.join('. '));
+                } else if (typeof errorData === 'object') {
+                    const errorMessages = Object.entries(errorData)
+                        .map(([field, messages]) => {
+                            const errorMsg = Array.isArray(messages) ? messages.join(', ') : messages;
+                            return `${field}: ${errorMsg}`;
+                        })
+                        .join('. ');
+                    setError(errorMessages);
+                } else {
+                    setError('Error al cancelar el turno');
+                }
+            } else {
+                setError('Error al cancelar el turno');
+            }
         }
     };
 
@@ -145,7 +182,13 @@ export default function ListarTurnos() {
             icon: <CheckCircleIcon fontSize="small" color="success" />,
             onClick: handleComplete,
             title: 'Marcar como Completado',
-            condition: (row) => row.estado !== 'Completado' // Solo mostrar si no está completado
+            condition: (row) => row.estado !== 'Completado' && row.estado !== 'Cancelado'
+        },
+        {
+            icon: <CancelIcon fontSize="small" color="error" />,
+            onClick: handleCancel,
+            title: 'Cancelar Turno',
+            condition: (row) => row.estado !== 'Completado' && row.estado !== 'Cancelado'
         }
     ] : [];
 
