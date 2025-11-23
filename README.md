@@ -17,7 +17,7 @@ Frontend desarrollado con React + Vite para el sistema de gestión médica.
 
 ### Prerrequisitos
 
-- Node.js 16+
+- Node.js 18+
 - npm o yarn
 - Backend Django corriendo en `http://localhost:8000`
 
