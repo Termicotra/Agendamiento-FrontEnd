@@ -60,23 +60,14 @@ export default function FormularioHistorial() {
 
   const loadCurrentProfesional = async () => {
     try {
-      // Obtener el perfil del usuario autenticado
       const profile = await authService.getProfile();
-      console.log('Profile loaded:', profile);
       if (profile.perfil_data?.id_profesional) {
         const profesionalId = profile.perfil_data.id_profesional;
-        console.log('Setting current profesional ID:', profesionalId);
         setCurrentProfesionalId(profesionalId);
-        // Auto-completar el campo profesional con el profesional actual
-        setFormData(prev => {
-          console.log('Setting formData profesional_id to:', profesionalId);
-          return { ...prev, profesional_id: profesionalId };
-        });
-      } else {
-        console.log('No id_profesional found in perfil_data');
+        setFormData(prev => ({ ...prev, profesional_id: profesionalId }));
       }
-    } catch (err) {
-      console.error('Error loading current profesional:', err);
+    } catch {
+      // Error silenciado
     }
   };
 
@@ -93,8 +84,7 @@ export default function FormularioHistorial() {
               label: field.displayFields.map(f => item[f]).filter(Boolean).join(' ')
             }))
           };
-        } catch (err) {
-          console.error(`Error loading ${field.name}:`, err);
+        } catch {
           return { fieldName: field.name, options: [] };
         }
       });
@@ -106,8 +96,7 @@ export default function FormularioHistorial() {
       });
       setFieldOptions(optionsMap);
       setOptionsLoaded(true);
-    } catch (err) {
-      console.error('Error loading options:', err);
+    } catch {
       setOptionsLoaded(true);
     }
   };
@@ -137,7 +126,7 @@ export default function FormularioHistorial() {
       });
     } catch (err) {
       setError(`Error al cargar el ${config.entityName.toLowerCase()}`);
-      console.error('Error:', err);
+      
     } finally {
       setLoading(false);
     }
@@ -223,17 +212,6 @@ export default function FormularioHistorial() {
                 const isDisabled = (field.name === 'paciente_id' && isPacienteContext) ||
                                    (field.name === 'profesional_id' && (isProfesionalContext || (hasRole('profesionales') && currentProfesionalId)));
                 
-                // Debug logging
-                if (field.name === 'profesional_id') {
-                  console.log('Profesional field:', {
-                    isProfesionalContext,
-                    hasRoleProfesionales: hasRole('profesionales'),
-                    currentProfesionalId,
-                    isDisabled,
-                    formDataValue: formData[field.name]
-                  });
-                }
-                
                 return (
                   <Box
                     key={field.name}
@@ -285,3 +263,4 @@ export default function FormularioHistorial() {
     </Box>
   );
 }
+

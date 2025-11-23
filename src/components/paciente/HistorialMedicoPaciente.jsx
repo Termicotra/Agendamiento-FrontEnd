@@ -63,7 +63,7 @@ export default function HistorialMedicoPaciente() {
             setError(null);
         } catch (err) {
             setError('Error al cargar el historial médico');
-            console.error('Error:', err);
+            
         } finally {
             setLoading(false);
         }
@@ -184,3 +184,4 @@ export default function HistorialMedicoPaciente() {
         </Box>
     );
 }
+

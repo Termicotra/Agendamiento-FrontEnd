@@ -42,7 +42,7 @@ export default function ListarEmpleados() {
             setError(null);
         } catch (err) {
             setError(`Error al cargar los ${config.entityNamePlural.toLowerCase()}`);
-            console.error('Error:', err);
+            
         } finally {
             setLoading(false);
         }
@@ -61,7 +61,7 @@ export default function ListarEmpleados() {
             setConfirmDialog({ open: false, id: null });
         } catch (err) {
             setError(`Error al eliminar el ${config.entityName.toLowerCase()}`);
-            console.error('Error:', err);
+            
             setConfirmDialog({ open: false, id: null });
         }
     };
@@ -125,3 +125,4 @@ export default function ListarEmpleados() {
         </Box>
     );
 }
+

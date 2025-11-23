@@ -16,18 +16,13 @@ class PermissionsService {
    * }
    */
   async fetchUserPermissions() {
-    try {
-      const response = await authClient.get(AUTH_ENDPOINTS.PERMISSIONS);
-      return {
-        permissions: response.data.permissions || [],
-        modules: response.data.modules || [],
-        roles: response.data.roles || [],
-        timestamp: new Date().toISOString(),
-      };
-    } catch (error) {
-      console.error('Error al obtener permisos del backend:', error);
-      throw error;
-    }
+    const response = await authClient.get(AUTH_ENDPOINTS.PERMISSIONS);
+    return {
+      permissions: response.data.permissions || [],
+      modules: response.data.modules || [],
+      roles: response.data.roles || [],
+      timestamp: new Date().toISOString(),
+    };
   }
 
   /**
@@ -37,8 +32,8 @@ class PermissionsService {
   savePermissionsToStorage(permissionsData) {
     try {
       localStorage.setItem('user_permissions', JSON.stringify(permissionsData));
-    } catch (error) {
-      console.error('Error al guardar permisos en localStorage:', error);
+    } catch {
+      // Silent fail - localStorage might be unavailable
     }
   }
 
@@ -50,8 +45,7 @@ class PermissionsService {
     try {
       const stored = localStorage.getItem('user_permissions');
       return stored ? JSON.parse(stored) : null;
-    } catch (error) {
-      console.error('Error al leer permisos de localStorage:', error);
+    } catch {
       return null;
     }
   }
@@ -62,8 +56,8 @@ class PermissionsService {
   clearPermissions() {
     try {
       localStorage.removeItem('user_permissions');
-    } catch (error) {
-      console.error('Error al limpiar permisos:', error);
+    } catch {
+      // Silent fail - localStorage might be unavailable
     }
   }
 

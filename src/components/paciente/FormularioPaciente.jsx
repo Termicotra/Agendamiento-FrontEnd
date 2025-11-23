@@ -59,7 +59,7 @@ export default function FormularioPaciente() {
             setFormData(formValues);
         } catch (err) {
             setError(`Error al cargar el ${config.entityName.toLowerCase()}`);
-            console.error('Error:', err);
+            
         } finally {
             setLoadingData(false);
         }
@@ -88,7 +88,7 @@ export default function FormularioPaciente() {
             navigate('/pacientes');
         } catch (err) {
             setError(err.response?.data?.detail || `Error al guardar el ${config.entityName.toLowerCase()}`);
-            console.error('Error:', err);
+            
         } finally {
             setLoading(false);
         }
@@ -150,3 +150,4 @@ export default function FormularioPaciente() {
         </Box>
     );
 }
+

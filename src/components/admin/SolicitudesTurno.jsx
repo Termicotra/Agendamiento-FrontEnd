@@ -29,8 +29,7 @@ export default function SolicitudesTurno() {
       const response = await apiClient.get(`${API_ENDPOINTS.TURNOS}?estado=Pendiente`);
       setTurnos(response.data);
       setError(null);
-    } catch (error) {
-      console.error('Error al cargar las solicitudes de turno:', error);
+    } catch {
       setError('Error al cargar las solicitudes de turno');
     } finally {
       setLoading(false);
@@ -59,8 +58,6 @@ export default function SolicitudesTurno() {
       await fetchTurnosPendientes();
       setError(null);
     } catch (err) {
-      console.error('Error al activar turno:', err);
-      // Mostrar errores de validación del backend
       if (err.response && err.response.data) {
         const errorData = err.response.data;
         if (errorData.non_field_errors) {
@@ -114,8 +111,7 @@ export default function SolicitudesTurno() {
           };
           await apiClient.patch(`${API_ENDPOINTS.TURNOS}${id}/`, turnoActualizado);
           await fetchTurnosPendientes();
-        } catch (err) {
-          console.error('Error al cancelar turno:', err);
+        } catch {
           setError('Error al cancelar el turno');
         } finally {
           setUpdatingId(null);
@@ -151,3 +147,4 @@ export default function SolicitudesTurno() {
     </Box>
   );
 }
+

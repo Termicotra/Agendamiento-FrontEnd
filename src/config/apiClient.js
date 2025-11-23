@@ -34,66 +34,66 @@ const apiClient = axios.create({
 
 /**
  * Interceptor para agregar el token JWT automáticamente en cada petición.
- * También maneja el refresh automático de tokens expirados.
  */
-apiClient.interceptors.request.use(
-    (config) => {
-        const token = localStorage.getItem('jwt');
-        if (token) {
-            config.headers.Authorization = `Bearer ${token}`;
-        }
-        return config;
-    },
-    (error) => {
-        return Promise.reject(error);
+const addAuthTokenInterceptor = (config) => {
+    const token = localStorage.getItem('jwt');
+    if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
     }
-);
+    return config;
+};
 
 /**
- * Interceptor para manejar errores de respuesta.
- * Implementa refresh automático de tokens cuando expiran (401).
+ * Maneja el refresh del token de autenticación
  */
-apiClient.interceptors.response.use(
-    (response) => response,
-    async (error) => {
-        const originalRequest = error.config;
-
-        // Si es error 401 y no hemos intentado refresh aún
-        if (error.response?.status === 401 && !originalRequest._retry) {
-            originalRequest._retry = true;
-
-            try {
-                const refreshToken = localStorage.getItem('refresh_token');
-                if (!refreshToken) {
-                    // No hay refresh token, redirigir a login
-                    localStorage.clear();
-                    window.location.href = '/login';
-                    return Promise.reject(error);
-                }
-
-                // Intentar obtener nuevo access token
-                const response = await axios.post(
-                    `${API_BASE_URL}/auth/api/token/refresh/`,
-                    { refresh: refreshToken }
-                );
-
-                const newAccessToken = response.data.access;
-                localStorage.setItem('jwt', newAccessToken);
-
-                // Reintentar la petición original con el nuevo token
-                originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
-                return apiClient(originalRequest);
-            } catch (refreshError) {
-                // Refresh falló, limpiar storage y redirigir a login
-                localStorage.clear();
-                window.location.href = '/login';
-                return Promise.reject(refreshError);
-            }
-        }
-
-        return Promise.reject(error);
+const handleTokenRefresh = async () => {
+    const refreshToken = localStorage.getItem('refresh_token');
+    if (!refreshToken) {
+        throw new Error('No refresh token available');
     }
-);
+
+    const response = await axios.post(
+        `${API_BASE_URL}/auth/api/token/refresh/`,
+        { refresh: refreshToken }
+    );
+
+    const newAccessToken = response.data.access;
+    localStorage.setItem('jwt', newAccessToken);
+    return newAccessToken;
+};
+
+/**
+ * Redirige al usuario a la página de login
+ */
+const redirectToLogin = () => {
+    localStorage.clear();
+    window.location.href = '/login';
+};
+
+/**
+ * Interceptor para manejar errores de respuesta con refresh automático
+ */
+const createResponseInterceptor = (axiosInstance) => async (error) => {
+    const originalRequest = error.config;
+
+    if (error.response?.status === 401 && !originalRequest._retry) {
+        originalRequest._retry = true;
+
+        try {
+            const newAccessToken = await handleTokenRefresh();
+            originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
+            return axiosInstance(originalRequest);
+        } catch {
+            redirectToLogin();
+            return Promise.reject(error);
+        }
+    }
+
+    return Promise.reject(error);
+};
+
+apiClient.interceptors.request.use(addAuthTokenInterceptor, (error) => Promise.reject(error));
+apiClient.interceptors.response.use((response) => response, createResponseInterceptor(apiClient));
 
 /**
  * Instancia de Axios para endpoints de autenticación (sin el prefijo /api).
@@ -108,69 +108,36 @@ export const authClient = axios.create({
 });
 
 /**
- * Interceptor para agregar el token JWT automáticamente en peticiones de authClient.
- * También maneja el refresh automático de tokens expirados.
+ * Interceptor para manejar errores de respuesta en authClient
+ * Evita refresh en endpoints de login y refresh
  */
-authClient.interceptors.request.use(
-    (config) => {
-        const token = localStorage.getItem('jwt');
-        if (token) {
-            config.headers.Authorization = `Bearer ${token}`;
+const createAuthResponseInterceptor = (axiosInstance) => async (error) => {
+    const originalRequest = error.config;
+    const isLoginEndpoint = originalRequest.url?.includes('/login');
+    const isRefreshEndpoint = originalRequest.url?.includes('/token/refresh');
+
+    if (
+        error.response?.status === 401 &&
+        !originalRequest._retry &&
+        !isLoginEndpoint &&
+        !isRefreshEndpoint
+    ) {
+        originalRequest._retry = true;
+
+        try {
+            const newAccessToken = await handleTokenRefresh();
+            originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
+            return axiosInstance(originalRequest);
+        } catch {
+            redirectToLogin();
+            return Promise.reject(error);
         }
-        return config;
-    },
-    (error) => {
-        return Promise.reject(error);
     }
-);
 
-/**
- * Interceptor para manejar errores de respuesta en authClient.
- */
-authClient.interceptors.response.use(
-    (response) => response,
-    async (error) => {
-        const originalRequest = error.config;
+    return Promise.reject(error);
+};
 
-        // Para authClient, solo intentamos refresh si no es la ruta de login o refresh
-        const isLoginEndpoint = originalRequest.url?.includes('/login');
-        const isRefreshEndpoint = originalRequest.url?.includes('/token/refresh');
-
-        if (
-            error.response?.status === 401 &&
-            !originalRequest._retry &&
-            !isLoginEndpoint &&
-            !isRefreshEndpoint
-        ) {
-            originalRequest._retry = true;
-
-            try {
-                const refreshToken = localStorage.getItem('refresh_token');
-                if (!refreshToken) {
-                    localStorage.clear();
-                    window.location.href = '/login';
-                    return Promise.reject(error);
-                }
-
-                const response = await axios.post(
-                    `${API_BASE_URL}/auth/api/token/refresh/`,
-                    { refresh: refreshToken }
-                );
-
-                const newAccessToken = response.data.access;
-                localStorage.setItem('jwt', newAccessToken);
-
-                originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
-                return authClient(originalRequest);
-            } catch (refreshError) {
-                localStorage.clear();
-                window.location.href = '/login';
-                return Promise.reject(refreshError);
-            }
-        }
-
-        return Promise.reject(error);
-    }
-);
+authClient.interceptors.request.use(addAuthTokenInterceptor, (error) => Promise.reject(error));
+authClient.interceptors.response.use((response) => response, createAuthResponseInterceptor(authClient));
 
 export default apiClient;

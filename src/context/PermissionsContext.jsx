@@ -41,10 +41,7 @@ export const PermissionsProvider = ({ children }) => {
         loading: false,
         error: null,
       });
-    } catch (error) {
-      console.error('Error al cargar permisos:', error);
-      
-      // En caso de error, intentar usar permisos del caché
+    } catch {
       const cached = permissionsService.getPermissionsFromStorage();
       if (cached) {
         setPermissions({
@@ -179,3 +176,4 @@ export const usePermissions = () => {
   }
   return context;
 };
+

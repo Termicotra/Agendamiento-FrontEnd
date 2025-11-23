@@ -104,8 +104,8 @@ export default function Navbar() {
           { refresh: refreshToken },
           { headers: { Authorization: `Bearer ${accessToken}` } }
         );
-      } catch (e) {
-        console.log('Error en logout:', e);
+      } catch {
+        // Error silenciado
       }
     }
     logout();
@@ -218,3 +218,4 @@ export default function Navbar() {
     </AppBar>
   );
 }
+

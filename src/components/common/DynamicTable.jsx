@@ -142,3 +142,4 @@ export default function DynamicTable({ columns, data, idField, onEdit, onDelete,
     </Box>
   );
 }
+

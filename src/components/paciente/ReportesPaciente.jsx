@@ -43,8 +43,8 @@ export default function ReportesPaciente() {
     try {
       const response = await apiClient.get(`${API_ENDPOINTS.PACIENTES}${id}/`);
       setPaciente(response.data);
-    } catch (err) {
-      console.error('Error al cargar paciente:', err);
+    } catch {
+      // Error silenciado
     }
   };
 
@@ -59,7 +59,7 @@ export default function ReportesPaciente() {
       setError(null);
     } catch (err) {
       setError(`Error al cargar los ${config.entityNamePlural.toLowerCase()}`);
-      console.error('Error:', err);
+      
     } finally {
       setLoading(false);
     }
@@ -78,7 +78,7 @@ export default function ReportesPaciente() {
       setConfirmDialog({ open: false, id: null });
     } catch (err) {
       setError(`Error al eliminar el ${config.entityName.toLowerCase()}`);
-      console.error('Error:', err);
+      
       setConfirmDialog({ open: false, id: null });
     }
   };
@@ -159,3 +159,4 @@ export default function ReportesPaciente() {
     </Box>
   );
 }
+

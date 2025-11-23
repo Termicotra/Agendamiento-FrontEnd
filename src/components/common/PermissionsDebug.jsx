@@ -23,7 +23,6 @@ export default function PermissionsDebug() {
   const { authenticated, username, roles: authRoles } = useAuth();
 
   const handleRefresh = async () => {
-    console.log('🔄 Refrescando permisos manualmente...');
     await refreshPermissions();
   };
 
@@ -175,3 +174,4 @@ export default function PermissionsDebug() {
     </Paper>
   );
 }
+

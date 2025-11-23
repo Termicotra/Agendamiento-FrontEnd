@@ -15,8 +15,7 @@ export const decodeJWT = (token) => {
         .join('')
     );
     return JSON.parse(jsonPayload);
-  } catch (error) {
-    console.error('Error decodificando JWT:', error);
+  } catch {
     return null;
   }
 };

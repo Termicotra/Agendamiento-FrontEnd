@@ -59,7 +59,7 @@ export default function FormularioEmpleado() {
             setFormData(formValues);
         } catch (err) {
             setError(`Error al cargar el ${config.entityName.toLowerCase()}`);
-            console.error('Error:', err);
+            
         } finally {
             setLoadingData(false);
         }
@@ -88,7 +88,7 @@ export default function FormularioEmpleado() {
             navigate('/empleados');
         } catch (err) {
             setError(err.response?.data?.detail || `Error al guardar el ${config.entityName.toLowerCase()}`);
-            console.error('Error:', err);
+            
         } finally {
             setLoading(false);
         }
@@ -150,3 +150,4 @@ export default function FormularioEmpleado() {
         </Box>
     );
 }
+

@@ -90,8 +90,7 @@ export default function FormularioTurno() {
                             label: field.displayFields.map(f => item[f]).filter(Boolean).join(' ')
                         }))
                     };
-                } catch (err) {
-                    console.error(`Error loading ${field.name}:`, err);
+                } catch {
                     return { fieldName: field.name, options: [] };
                 }
             });
@@ -103,9 +102,8 @@ export default function FormularioTurno() {
             });
             setFieldOptions(optionsMap);
             setOptionsLoaded(true);
-        } catch (err) {
-            console.error('Error loading options:', err);
-            setOptionsLoaded(true); // Marcar como cargado incluso si hay error
+        } catch {
+            setOptionsLoaded(true);
         }
     };
 
@@ -123,8 +121,8 @@ export default function FormularioTurno() {
                     }));
                 }
             }
-        } catch (err) {
-            console.error('Error al auto-completar paciente:', err);
+        } catch {
+            // Error silenciado
         }
     };
 
@@ -157,7 +155,7 @@ export default function FormularioTurno() {
             setFormData(formValues);
         } catch (err) {
             setError(`Error al cargar el ${config.entityName.toLowerCase()}`);
-            console.error('Error:', err);
+            
         } finally {
             setLoadingData(false);
         }
@@ -251,7 +249,7 @@ export default function FormularioTurno() {
             } else {
                 setError(`Error al guardar el ${config.entityName.toLowerCase()}`);
             }
-            console.error('Error:', err);
+            
         } finally {
             setLoading(false);
         }
@@ -367,3 +365,4 @@ export default function FormularioTurno() {
         </Box>
     );
 }
+

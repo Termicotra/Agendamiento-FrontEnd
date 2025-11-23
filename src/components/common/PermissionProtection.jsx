@@ -1,4 +1,3 @@
-import React from 'react';
 import { Navigate } from 'react-router-dom';
 import { usePermissions } from '../../context/PermissionsContext';
 import { Box, Typography, Paper, CircularProgress } from '@mui/material';
@@ -153,3 +152,4 @@ export const UnauthorizedPage = () => {
     </Box>
   );
 };
+
