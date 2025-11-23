@@ -431,6 +431,15 @@ export const HISTORIAL_TABLE_COLUMNS = [
   { field: 'profesional', label: 'Profesional', align: 'left', nested: ['nombre', 'apellido'] },
 ];
 
+// Columnas para historiales cuando se muestran desde la vista de un profesional
+export const HISTORIAL_PROFESIONAL_TABLE_COLUMNS = [
+  { field: 'id_historial', label: 'ID', align: 'center' },
+  { field: 'fecha', label: 'Fecha', align: 'left' },
+  { field: 'hora', label: 'Hora', align: 'left' },
+  { field: 'razon', label: 'Razón', align: 'left' },
+  { field: 'paciente', label: 'Paciente', align: 'left', nested: ['nombre', 'apellido'] },
+];
+
 export const HISTORIAL_CONFIG = {
   entityName: 'Historial Clínico',
   entityNamePlural: 'Historiales Clínicos',
@@ -495,6 +504,14 @@ export const REPORTE_TABLE_COLUMNS = [
   { field: 'id_reporte', label: 'ID', align: 'center' },
   { field: 'fecha', label: 'Fecha', align: 'left' },
   { field: 'profesional', label: 'Profesional', align: 'left', nested: ['nombre', 'apellido'] },
+  { field: 'descripcion', label: 'Descripción', align: 'left' },
+];
+
+// Columnas para reportes cuando se muestran desde la vista de un profesional
+export const REPORTE_PROFESIONAL_TABLE_COLUMNS = [
+  { field: 'id_reporte', label: 'ID', align: 'center' },
+  { field: 'fecha', label: 'Fecha', align: 'left' },
+  { field: 'paciente', label: 'Paciente', align: 'left', nested: ['nombre', 'apellido'] },
   { field: 'descripcion', label: 'Descripción', align: 'left' },
 ];
 

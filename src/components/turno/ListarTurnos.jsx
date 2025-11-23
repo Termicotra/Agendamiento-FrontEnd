@@ -32,9 +32,11 @@ export default function ListarTurnos() {
     const [confirmDialog, setConfirmDialog] = useState({ open: false, id: null });
     const [showCompleted, setShowCompleted] = useState(false);
     const [pacienteId, setPacienteId] = useState(null);
+    const [profesionalId, setProfesionalId] = useState(null);
 
     const config = TURNO_CONFIG;
     const isPaciente = hasRole('pacientes');
+    const isProfesional = hasRole('profesionales');
     
     // Verificar permisos
     const canCreate = canPerformAction(MODULES.TURNOS, ACTIONS.CREATE);
@@ -43,7 +45,7 @@ export default function ListarTurnos() {
 
     useEffect(() => {
         fetchData();
-    }, [pacienteId]);
+    }, [pacienteId, profesionalId]);
 
     const fetchData = async () => {
         try {
@@ -62,19 +64,38 @@ export default function ListarTurnos() {
                 }
             }
 
+            // Si es profesional y aún no tenemos su ID, obtenerlo primero
+            if (isProfesional && !profesionalId) {
+                const profile = await authService.getProfile();
+                if (profile.perfil_data?.id_profesional) {
+                    setProfesionalId(profile.perfil_data.id_profesional);
+                    return; // Salir aquí, el useEffect volverá a llamar cuando profesionalId cambie
+                }
+            }
+
             const response = await apiClient.get(API_ENDPOINTS[config.endpoint]);
             let turnos = response.data;
 
-            // Filtrar solo turnos activos (excluyendo pendientes)
-            turnos = turnos.filter(turno => turno.estado === 'Activo');
-
-            // Si es paciente, filtrar solo sus turnos activos
+            // Si es paciente, mostrar todos sus turnos (Activo, Pendiente, Cancelado)
             if (isPaciente && pacienteId) {
                 turnos = turnos.filter(turno => 
                     (turno.paciente === pacienteId || 
                     turno.paciente?.id === pacienteId || 
                     turno.paciente?.id_paciente === pacienteId)
                 );
+            } 
+            // Si es profesional, mostrar solo sus turnos
+            else if (isProfesional && profesionalId) {
+                turnos = turnos.filter(turno => 
+                    (turno.estado === 'Activo') &&
+                    (turno.profesional === profesionalId || 
+                    turno.profesional?.id === profesionalId || 
+                    turno.profesional?.id_profesional === profesionalId)
+                );
+            }
+            // Para otros roles (admin, empleados), filtrar solo turnos activos
+            else {
+                turnos = turnos.filter(turno => turno.estado === 'Activo');
             }
 
             setData(turnos);

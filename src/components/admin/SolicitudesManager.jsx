@@ -223,7 +223,6 @@ export default function SolicitudesManager() {
                               >
                                 <MenuItem value="pacientes">Paciente</MenuItem>
                                 <MenuItem value="profesionales">Profesional</MenuItem>
-                                <MenuItem value="empleados">Empleado</MenuItem>
                                 <MenuItem value="administradores">Administrador</MenuItem>
                               </Select>
                             </FormControl>

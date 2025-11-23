@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
+import { authService } from '../../services/authService';
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
@@ -17,12 +19,14 @@ export default function FormularioHistorial() {
   const { id: entityId, historialId } = useParams(); // entityId puede ser pacienteId o profesionalId
   const navigate = useNavigate();
   const location = useLocation();
+  const { hasRole } = useAuth();
   const [formData, setFormData] = useState(HISTORIAL_CONFIG.defaultValues);
   const [fieldOptions, setFieldOptions] = useState({});
   const [optionsLoaded, setOptionsLoaded] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
+  const [currentProfesionalId, setCurrentProfesionalId] = useState(null);
 
   const config = HISTORIAL_CONFIG;
   const isEditMode = !!historialId;
@@ -34,6 +38,11 @@ export default function FormularioHistorial() {
   useEffect(() => {
     const initialize = async () => {
       await loadFieldOptions();
+      
+      // Si el usuario es profesional, obtener su ID de profesional
+      if (hasRole('profesionales')) {
+        await loadCurrentProfesional();
+      }
       
       // Auto-completar el campo según el contexto
       if (isPacienteContext && entityId) {
@@ -48,6 +57,28 @@ export default function FormularioHistorial() {
     };
     initialize();
   }, [historialId, entityId]);
+
+  const loadCurrentProfesional = async () => {
+    try {
+      // Obtener el perfil del usuario autenticado
+      const profile = await authService.getProfile();
+      console.log('Profile loaded:', profile);
+      if (profile.perfil_data?.id_profesional) {
+        const profesionalId = profile.perfil_data.id_profesional;
+        console.log('Setting current profesional ID:', profesionalId);
+        setCurrentProfesionalId(profesionalId);
+        // Auto-completar el campo profesional con el profesional actual
+        setFormData(prev => {
+          console.log('Setting formData profesional_id to:', profesionalId);
+          return { ...prev, profesional_id: profesionalId };
+        });
+      } else {
+        console.log('No id_profesional found in perfil_data');
+      }
+    } catch (err) {
+      console.error('Error loading current profesional:', err);
+    }
+  };
 
   const loadFieldOptions = async () => {
     try {
@@ -189,6 +220,20 @@ export default function FormularioHistorial() {
             <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(12, 1fr)', gap: 2 }}>
               {HISTORIAL_FIELDS.map(field => {
                 const fieldOptionsToUse = field.options || fieldOptions[field.name];
+                const isDisabled = (field.name === 'paciente_id' && isPacienteContext) ||
+                                   (field.name === 'profesional_id' && (isProfesionalContext || (hasRole('profesionales') && currentProfesionalId)));
+                
+                // Debug logging
+                if (field.name === 'profesional_id') {
+                  console.log('Profesional field:', {
+                    isProfesionalContext,
+                    hasRoleProfesionales: hasRole('profesionales'),
+                    currentProfesionalId,
+                    isDisabled,
+                    formDataValue: formData[field.name]
+                  });
+                }
+                
                 return (
                   <Box
                     key={field.name}
@@ -203,10 +248,7 @@ export default function FormularioHistorial() {
                       field={field}
                       value={formData[field.name] || ''}
                       onChange={handleChangeEvent}
-                      disabled={
-                        (field.name === 'paciente_id' && isPacienteContext) ||
-                        (field.name === 'profesional_id' && isProfesionalContext)
-                      }
+                      disabled={isDisabled}
                       options={fieldOptionsToUse}
                     />
                   </Box>

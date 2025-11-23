@@ -12,7 +12,7 @@ import CircularProgress from '@mui/material/CircularProgress';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import apiClient from '../../config/apiClient';
 import { API_ENDPOINTS } from '../../config/endpoint';
-import { REPORTE_CONFIG, REPORTE_TABLE_COLUMNS } from '../../config/formConfig';
+import { REPORTE_CONFIG, REPORTE_PROFESIONAL_TABLE_COLUMNS } from '../../config/formConfig';
 import DynamicTable from '../common/DynamicTable';
 import ConfirmDialog from '../common/ConfirmDialog';
 
@@ -121,7 +121,7 @@ export default function ReportesProfesional() {
           {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
 
           <DynamicTable
-            columns={REPORTE_TABLE_COLUMNS}
+            columns={REPORTE_PROFESIONAL_TABLE_COLUMNS}
             data={reportes}
             idField={config.idField}
             onEdit={canEdit ? handleEdit : null}
