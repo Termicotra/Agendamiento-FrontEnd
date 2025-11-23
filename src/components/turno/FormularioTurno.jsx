@@ -195,7 +195,7 @@ export default function FormularioTurno() {
             .filter(prof => prof.especialidad === especialidadSeleccionada)
             .map(prof => ({
                 value: prof.id_profesional,
-                label: `${prof.nombre} ${prof.apellido} - ${prof.especialidad}`
+                label: `${prof.nombre} ${prof.apellido}`
             }));
         
         return profesionalesFiltrados;

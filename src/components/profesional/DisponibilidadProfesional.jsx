@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
+import { authService } from '../../services/authService';
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
@@ -38,6 +40,7 @@ import ConfirmDialog from '../common/ConfirmDialog';
 export default function DisponibilidadProfesional() {
     const navigate = useNavigate();
     const { id } = useParams();
+    const { hasRole } = useAuth();
     const [profesional, setProfesional] = useState(null);
     const [disponibilidad, setDisponibilidad] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -45,6 +48,7 @@ export default function DisponibilidadProfesional() {
     const [searchTerm, setSearchTerm] = useState('');
     const [openDialog, setOpenDialog] = useState(false);
     const [editingId, setEditingId] = useState(null);
+    const [currentProfesionalId, setCurrentProfesionalId] = useState(null);
     
     // Inicializar formData con valores por defecto
     const getInitialFormData = () => {
@@ -62,6 +66,37 @@ export default function DisponibilidadProfesional() {
     const [submitting, setSubmitting] = useState(false);
 
     const config = DISPONIBILIDAD_CONFIG;
+
+    // Determinar si el usuario puede editar/eliminar disponibilidades
+    // El usuario puede editar si es: 1) Administrador, 2) El profesional propietario
+    const canEdit = useMemo(() => {
+        if (!profesional || !currentProfesionalId) return hasRole('administradores');
+        
+        // Los administradores pueden editar cualquier disponibilidad
+        if (hasRole('administradores')) return true;
+        
+        // El profesional puede editar su propia disponibilidad
+        // Comparar el ID del profesional de la página con el ID del profesional autenticado
+        if (hasRole('profesionales') && parseInt(id) === currentProfesionalId) return true;
+        
+        return false;
+    }, [profesional, currentProfesionalId, hasRole, id]);
+
+    useEffect(() => {
+        const loadProfile = async () => {
+            if (hasRole('profesionales')) {
+                try {
+                    const profile = await authService.getProfile();
+                    if (profile.perfil_data?.id_profesional) {
+                        setCurrentProfesionalId(profile.perfil_data.id_profesional);
+                    }
+                } catch (err) {
+                    console.error('Error loading profile:', err);
+                }
+            }
+        };
+        loadProfile();
+    }, [hasRole]);
 
     useEffect(() => {
         fetchData();
@@ -243,16 +278,18 @@ export default function DisponibilidadProfesional() {
                         <Typography variant="h5" component="h2" sx={{ fontWeight: 700 }}>
                             {config.title} - Profesional
                         </Typography>
-                        <Button
-                            variant="contained"
-                            startIcon={<AddIcon />}
-                            onClick={() => handleOpenDialog()}
-                            disableRipple
-                            disableElevation
-                            sx={{ ml: 2, '&:hover': { bgcolor: 'primary.main', boxShadow: 'none', color: 'inherit' } }}
-                        >
-                            {config.createButtonText}
-                        </Button>
+                        {canEdit && (
+                            <Button
+                                variant="contained"
+                                startIcon={<AddIcon />}
+                                onClick={() => handleOpenDialog()}
+                                disableRipple
+                                disableElevation
+                                sx={{ ml: 2, '&:hover': { bgcolor: 'primary.main', boxShadow: 'none', color: 'inherit' } }}
+                            >
+                                {config.createButtonText}
+                            </Button>
+                        )}
                         <Box sx={{ flex: 1 }} />
                         <Button
                             variant="outlined"
@@ -354,24 +391,28 @@ export default function DisponibilidadProfesional() {
                                             ))}
                                             <TableCell align="center">
                                                 <Box sx={{ display: 'flex', justifyContent: 'center', gap: 0.5 }}>
-                                                    <IconButton
-                                                        size="small"
-                                                        onClick={() => handleOpenDialog(disp)}
-                                                        disableRipple
-                                                        sx={{ '&:hover': { bgcolor: 'transparent' } }}
-                                                        title="Editar"
-                                                    >
-                                                        <EditIcon fontSize="small" color="primary" />
-                                                    </IconButton>
-                                                    <IconButton
-                                                        size="small"
-                                                        onClick={() => handleDelete(disp[config.idField])}
-                                                        disableRipple
-                                                        sx={{ '&:hover': { bgcolor: 'transparent' } }}
-                                                        title="Eliminar"
-                                                    >
-                                                        <DeleteIcon fontSize="small" color="error" />
-                                                    </IconButton>
+                                                    {canEdit && (
+                                                        <>
+                                                            <IconButton
+                                                                size="small"
+                                                                onClick={() => handleOpenDialog(disp)}
+                                                                disableRipple
+                                                                sx={{ '&:hover': { bgcolor: 'transparent' } }}
+                                                                title="Editar"
+                                                            >
+                                                                <EditIcon fontSize="small" color="primary" />
+                                                            </IconButton>
+                                                            <IconButton
+                                                                size="small"
+                                                                onClick={() => handleDelete(disp[config.idField])}
+                                                                disableRipple
+                                                                sx={{ '&:hover': { bgcolor: 'transparent' } }}
+                                                                title="Eliminar"
+                                                            >
+                                                                <DeleteIcon fontSize="small" color="error" />
+                                                            </IconButton>
+                                                        </>
+                                                    )}
                                                 </Box>
                                             </TableCell>
                                         </TableRow>

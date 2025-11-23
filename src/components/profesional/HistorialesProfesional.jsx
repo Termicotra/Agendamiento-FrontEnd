@@ -12,7 +12,7 @@ import CircularProgress from '@mui/material/CircularProgress';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import apiClient from '../../config/apiClient';
 import { API_ENDPOINTS } from '../../config/endpoint';
-import { HISTORIAL_CONFIG, HISTORIAL_TABLE_COLUMNS } from '../../config/formConfig';
+import { HISTORIAL_CONFIG, HISTORIAL_PROFESIONAL_TABLE_COLUMNS } from '../../config/formConfig';
 import DynamicTable from '../common/DynamicTable';
 import ConfirmDialog from '../common/ConfirmDialog';
 
@@ -121,7 +121,7 @@ export default function HistorialesProfesional() {
           {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
 
           <DynamicTable
-            columns={HISTORIAL_TABLE_COLUMNS}
+            columns={HISTORIAL_PROFESIONAL_TABLE_COLUMNS}
             data={historiales}
             idField={config.idField}
             onEdit={canEdit ? handleEdit : null}
