@@ -90,8 +90,8 @@ export default function DisponibilidadProfesional() {
                     if (profile.perfil_data?.id_profesional) {
                         setCurrentProfesionalId(profile.perfil_data.id_profesional);
                     }
-                } catch (err) {
-                    console.error('Error loading profile:', err);
+                } catch {
+                    // Error silenciado
                 }
             }
         };
@@ -128,7 +128,7 @@ export default function DisponibilidadProfesional() {
             setError(null);
         } catch (error) {
             setError('Error al cargar la disponibilidad');
-            console.error('Error:', error);
+            
         } finally {
             setLoading(false);
         }
@@ -220,7 +220,7 @@ export default function DisponibilidadProfesional() {
             } else {
                 setError(`Error al guardar ${config.entityName.toLowerCase()}`);
             }
-            console.error('Error:', err);
+            
         } finally {
             setSubmitting(false);
         }
@@ -243,8 +243,7 @@ export default function DisponibilidadProfesional() {
             };
             await apiClient.put(`${API_ENDPOINTS[DISPONIBILIDAD_CONFIG.endpoint]}${disp[DISPONIBILIDAD_CONFIG.idField]}/`, dataToSend);
             await fetchData();
-        } catch (error) {
-            console.error('Error al cambiar estado:', error);
+        } catch {
             setError('No se pudo cambiar el estado');
         }
     };
@@ -257,7 +256,7 @@ export default function DisponibilidadProfesional() {
             setConfirmDialog({ open: false, id: null });
         } catch (error) {
             setError(`Error al eliminar ${config.entityName.toLowerCase()}`);
-            console.error('Error:', error);
+            
             setConfirmDialog({ open: false, id: null });
         }
     };
@@ -482,3 +481,4 @@ export default function DisponibilidadProfesional() {
         </Box>
     );
 }
+

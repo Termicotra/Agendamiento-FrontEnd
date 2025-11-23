@@ -102,7 +102,6 @@ export default function ListarTurnos() {
             setError(null);
         } catch (err) {
             setError(`Error al cargar los ${config.entityNamePlural.toLowerCase()}`);
-            console.error('Error:', err);
         } finally {
             setLoading(false);
         }
@@ -121,7 +120,6 @@ export default function ListarTurnos() {
             setConfirmDialog({ open: false, id: null });
         } catch (err) {
             setError(`Error al eliminar el ${config.entityName.toLowerCase()}`);
-            console.error('Error:', err);
             setConfirmDialog({ open: false, id: null });
         }
     };
@@ -132,9 +130,7 @@ export default function ListarTurnos() {
 
     const handleComplete = async (id) => {
         try {
-            // Usar PATCH para solo actualizar el estado, sin validaciones
             await apiClient.patch(`${API_ENDPOINTS[config.endpoint]}${id}/`, { estado: 'Completado' });
-            // Actualizar el estado local
             setData(data.map(item => 
                 item[config.idField] === id 
                     ? { ...item, estado: 'Completado' } 
@@ -143,16 +139,13 @@ export default function ListarTurnos() {
             setError(null);
         } catch (err) {
             setError('Error al marcar el turno como completado');
-            console.error('Error:', err);
         }
     };
 
     const handleCancel = async (id) => {
         try {
-            // Usar PATCH para solo actualizar el estado, sin validaciones
             await apiClient.patch(`${API_ENDPOINTS[config.endpoint]}${id}/`, { estado: 'Cancelado' });
             
-            // Actualizar el estado local
             setData(data.map(item => 
                 item[config.idField] === id 
                     ? { ...item, estado: 'Cancelado' } 
@@ -160,7 +153,6 @@ export default function ListarTurnos() {
             ));
             setError(null);
         } catch (error) {
-            console.error('Error al cancelar turno:', error);
             if (error.response?.data) {
                 const errorData = error.response.data;
                 if (errorData.non_field_errors) {
@@ -282,3 +274,4 @@ export default function ListarTurnos() {
         </Box>
     );
 }
+

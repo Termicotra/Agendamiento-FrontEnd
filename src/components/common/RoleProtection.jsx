@@ -1,4 +1,3 @@
-import React from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useRoles } from '../../hooks/useRoles';
@@ -98,3 +97,4 @@ export const RoleBasedComponent = ({
 
   return hasAccess ? children : fallback;
 };
+

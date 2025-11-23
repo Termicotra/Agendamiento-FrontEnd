@@ -54,7 +54,7 @@ export default function HistorialesProfesional() {
       setError(null);
     } catch (err) {
       setError('Error al cargar los historiales clínicos');
-      console.error('Error:', err);
+      
     } finally {
       setLoading(false);
     }
@@ -73,7 +73,7 @@ export default function HistorialesProfesional() {
       setConfirmDialog({ open: false, id: null });
     } catch (err) {
       setError(`Error al eliminar el ${config.entityName.toLowerCase()}`);
-      console.error('Error:', err);
+      
       setConfirmDialog({ open: false, id: null });
     }
   };
@@ -143,3 +143,4 @@ export default function HistorialesProfesional() {
     </Box>
   );
 }
+

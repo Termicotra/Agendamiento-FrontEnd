@@ -72,8 +72,6 @@ class AuthService {
       if (refreshToken) {
         await authClient.post(AUTH_ENDPOINTS.LOGOUT, { refresh: refreshToken });
       }
-    } catch (error) {
-      console.error('Error durante logout:', error);
     } finally {
       this.clearStorage();
     }
@@ -159,8 +157,7 @@ class AuthService {
     try {
       const userStr = localStorage.getItem('user');
       return userStr ? JSON.parse(userStr) : null;
-    } catch (error) {
-      console.error('Error al obtener usuario actual:', error);
+    } catch {
       return null;
     }
   }

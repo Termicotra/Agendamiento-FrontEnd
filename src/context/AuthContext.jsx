@@ -24,16 +24,12 @@ export const AuthProvider = ({ children }) => {
     const token = localStorage.getItem('jwt');
     if (token) {
       try {
-        // Verificar si el token ha expirado
         if (isTokenExpired(token)) {
-          console.warn('Token expirado');
           logout();
           return;
         }
 
         const userInfo = getUserInfoFromToken(token);
-        
-        // Intentar obtener datos completos del usuario del localStorage
         const storedUser = authService.getCurrentUser();
         
         setUser({ 
@@ -45,8 +41,7 @@ export const AuthProvider = ({ children }) => {
           first_name: storedUser?.first_name || '',
           last_name: storedUser?.last_name || ''
         });
-      } catch (e) {
-        console.error('Error al verificar autenticación:', e);
+      } catch {
         setUser({ 
           username: '', 
           authenticated: false, 
@@ -76,7 +71,6 @@ export const AuthProvider = ({ children }) => {
     try {
       const userInfo = getUserInfoFromToken(token);
       
-      // Combinar información del token con datos adicionales
       const completeUserData = {
         username: userInfo.username,
         authenticated: true,
@@ -87,14 +81,12 @@ export const AuthProvider = ({ children }) => {
         last_name: userData?.last_name || ''
       };
       
-      // Almacenar roles en localStorage
       if (userInfo.roles && userInfo.roles.length > 0) {
         localStorage.setItem('user_roles', JSON.stringify(userInfo.roles));
       }
       
       setUser(completeUserData);
-    } catch (e) {
-      console.error('Error al procesar login:', e);
+    } catch {
       setUser({ 
         username: '', 
         authenticated: false, 
@@ -110,8 +102,6 @@ export const AuthProvider = ({ children }) => {
   const logout = async () => {
     try {
       await authService.logout();
-    } catch (error) {
-      console.error('Error durante logout:', error);
     } finally {
       setUser({ 
         username: '', 
@@ -167,3 +157,4 @@ export const useAuth = () => {
   }
   return context;
 };
+

@@ -48,8 +48,7 @@ export const useRoles = () => {
     try {
       const storedRoles = localStorage.getItem('user_roles');
       return storedRoles ? JSON.parse(storedRoles) : [];
-    } catch (error) {
-      console.error('Error al obtener roles del localStorage:', error);
+    } catch {
       return [];
     }
   };
