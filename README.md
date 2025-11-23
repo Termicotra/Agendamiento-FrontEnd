@@ -423,5 +423,5 @@ Para dudas o problemas:
 
 ---
 
-**Última actualización**: 15 de Noviembre de 2025  
+**Última actualización**: 15 de noviembre de 2025  
 **Versión**: 1.0.0
