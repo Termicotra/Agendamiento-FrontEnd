@@ -247,51 +247,36 @@ VITE_API_PREFIX=/api
 VITE_API_TIMEOUT=10000
 ```
 
-#### Producción
+#### Producción (Netlify)
 
-Para conectar con un backend desplegado, crear archivo `.env.production`:
+**⚠️ Importante:** NO crear archivo `.env.production` local. Las variables de entorno para producción se configuran directamente en el dashboard de Netlify.
 
-```env
-VITE_API_BASE_URL=https://tu-backend-desplegado.com
-VITE_API_PREFIX=/api
-VITE_API_TIMEOUT=10000
-```
+**Configuración en Netlify:**
+1. Ir a: Site settings → Build & deploy → Environment variables
+2. Agregar las siguientes variables:
+   - `VITE_API_BASE_URL` = `https://sistema-agendamiento-medico-pp1-production.up.railway.app` (sin barra final)
+   - `VITE_API_PREFIX` = `/api`
+   - `VITE_API_TIMEOUT` = `10000`
+3. Hacer redeploy del sitio:
+   - Opción 1: Push a tu repositorio (Git) → Netlify detecta y redeploya automáticamente
+   - Opción 2: Desde Netlify dashboard → Deploys → Trigger deploy → Deploy site
 
-**Ejemplos de URLs de backend:**
-- Heroku: `https://mi-app.herokuapp.com`
+**Ejemplos de URLs de backend según plataforma:**
 - Railway: `https://mi-app.railway.app`
+- Heroku: `https://mi-app.herokuapp.com`
 - Render: `https://mi-app.onrender.com`
 - PythonAnywhere: `https://usuario.pythonanywhere.com`
 - URL personalizada: `https://api.midominio.com`
 
-#### Netlify / Vercel
-
-Para despliegues en Netlify o Vercel, configura las variables de entorno en el dashboard:
-
-**Netlify:**
-1. Site settings → Build & deploy → Environment
-2. Agregar:
-   - `VITE_API_BASE_URL` = URL de tu backend
-   - `VITE_API_PREFIX` = `/api`
-   - `VITE_API_TIMEOUT` = `10000`
-
-**Vercel:**
+**Vercel (alternativa):**
+Si usas Vercel en lugar de Netlify:
 1. Settings → Environment Variables
 2. Agregar las mismas variables que Netlify
-
-### Configuración de API (Legacy)
-
-Si prefieres no usar variables de entorno, edita directamente `src/config/apiClient.js`:
-
-```javascript
-const API_BASE_URL = 'https://tu-backend-desplegado.com';
-```
-
-⚠️ **Nota:** Usar variables de entorno es la forma recomendada.
+3. Redeploy el proyecto
 
 ### Verificar Configuración
 
-Después de configurar las variables, verifica que funcionan:
+Después de configurar las variables en desarrollo local:
 
 ```bash
 # Build de prueba
@@ -301,7 +286,7 @@ npm run build
 npm run dev
 ```
 
-El navegador mostrará la URL base en la consola cuando cargue la aplicación.
+Para verificar en producción, abre la consola del navegador en tu sitio desplegado y verifica que las peticiones vayan a la URL correcta del backend.
 
 ## 🔧 Scripts Disponibles
 
