@@ -233,21 +233,75 @@ await solicitudesService.rechazarSolicitud(1);
 
 ## ⚙️ Configuración
 
-### Variables de Entorno (opcional)
+### Variables de Entorno
 
-Crear `.env` en la raíz:
+El proyecto usa variables de entorno para conectarse al backend. Esto permite cambiar fácilmente entre desarrollo y producción.
+
+#### Desarrollo Local
+
+Crear archivo `.env` en la raíz del proyecto:
 
 ```env
-VITE_API_URL=http://localhost:8000
+VITE_API_BASE_URL=http://localhost:8000
+VITE_API_PREFIX=/api
+VITE_API_TIMEOUT=10000
 ```
 
-### Configuración de API
+#### Producción
 
-Editar `src/config/apiClient.js`:
+Para conectar con un backend desplegado, crear archivo `.env.production`:
+
+```env
+VITE_API_BASE_URL=https://tu-backend-desplegado.com
+VITE_API_PREFIX=/api
+VITE_API_TIMEOUT=10000
+```
+
+**Ejemplos de URLs de backend:**
+- Heroku: `https://mi-app.herokuapp.com`
+- Railway: `https://mi-app.railway.app`
+- Render: `https://mi-app.onrender.com`
+- PythonAnywhere: `https://usuario.pythonanywhere.com`
+- URL personalizada: `https://api.midominio.com`
+
+#### Netlify / Vercel
+
+Para despliegues en Netlify o Vercel, configura las variables de entorno en el dashboard:
+
+**Netlify:**
+1. Site settings → Build & deploy → Environment
+2. Agregar:
+   - `VITE_API_BASE_URL` = URL de tu backend
+   - `VITE_API_PREFIX` = `/api`
+   - `VITE_API_TIMEOUT` = `10000`
+
+**Vercel:**
+1. Settings → Environment Variables
+2. Agregar las mismas variables que Netlify
+
+### Configuración de API (Legacy)
+
+Si prefieres no usar variables de entorno, edita directamente `src/config/apiClient.js`:
 
 ```javascript
-const API_BASE_URL = 'http://localhost:8000';
+const API_BASE_URL = 'https://tu-backend-desplegado.com';
 ```
+
+⚠️ **Nota:** Usar variables de entorno es la forma recomendada.
+
+### Verificar Configuración
+
+Después de configurar las variables, verifica que funcionan:
+
+```bash
+# Build de prueba
+npm run build
+
+# O iniciar en modo desarrollo
+npm run dev
+```
+
+El navegador mostrará la URL base en la consola cuando cargue la aplicación.
 
 ## 🔧 Scripts Disponibles
 
