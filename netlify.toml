@@ -1,8 +1,28 @@
+# Configuración de build para Netlify
 [build]
   command = "npm run build"
   publish = "dist"
 
+# Variables de entorno para producción
+# IMPORTANTE: También configura estas variables en la interfaz de Netlify
+# Dashboard > Site settings > Build & deploy > Environment variables
+[build.environment]
+  # Estas son valores de ejemplo - cámbialos en la interfaz de Netlify
+  # VITE_API_BASE_URL = "https://tu-backend-desplegado.com"
+  # VITE_API_PREFIX = "/api"
+  # VITE_API_TIMEOUT = "10000"
+
+# Redirecciones para SPA (Single Page Application)
 [[redirects]]
   from = "/*"
   to = "/index.html"
   status = 200
+
+# Headers de seguridad (opcional pero recomendado)
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "no-referrer"
+    Permissions-Policy = "geolocation=(), microphone=(), camera=()"

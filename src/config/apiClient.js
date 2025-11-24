@@ -3,16 +3,26 @@ import axios from 'axios';
 /**
  * @constant {string} API_BASE_URL
  * La URL base de tu proyecto Django.
- * Por defecto, usamos 'http://localhost:8000' si estás ejecutando Django localmente.
- * Si despliegas el backend, esta URL debe cambiar.
+ * Se obtiene de las variables de entorno (VITE_API_BASE_URL)
+ * Fallback: 'http://localhost:8000' para desarrollo local
  */
-const API_BASE_URL = 'http://localhost:8000'; 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
 
 /**
  * @constant {string} API_PREFIX
  * El prefijo de la API tal como se define en tu urls.py: path('api/', include(router.urls))
+ * Se obtiene de las variables de entorno (VITE_API_PREFIX)
+ * Fallback: '/api'
  */
-const API_PREFIX = '/api';
+const API_PREFIX = import.meta.env.VITE_API_PREFIX || '/api';
+
+/**
+ * @constant {number} API_TIMEOUT
+ * Timeout para las peticiones HTTP en milisegundos
+ * Se obtiene de las variables de entorno (VITE_API_TIMEOUT)
+ * Fallback: 10000 (10 segundos)
+ */
+const API_TIMEOUT = parseInt(import.meta.env.VITE_API_TIMEOUT || '10000', 10);
 
 /**
  * @constant {string} BASE_API_URL
@@ -29,7 +39,7 @@ const apiClient = axios.create({
     headers: {
         'Content-Type': 'application/json',
     },
-    timeout: 5000, 
+    timeout: API_TIMEOUT, 
 });
 
 /**
@@ -103,7 +113,7 @@ export const authClient = axios.create({
     headers: {
         'Content-Type': 'application/json',
     },
-    timeout: 10000,
+    timeout: API_TIMEOUT,
     withCredentials: false,
 });
 
