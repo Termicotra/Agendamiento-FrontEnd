@@ -2,6 +2,17 @@
 
 Frontend desarrollado con React + Vite para el sistema de gestión médica.
 
+## 🏗️ Arquitectura del Sistema
+
+![Arquitectura del Sistema](./docs/images/arquitectura.png)
+
+El sistema está compuesto por tres capas principales:
+
+- **Client Layer**: Interfaz web accesible desde navegadores (desplegada en Netlify)
+- **Frontend Layer**: Servidor web con contenedor Nginx y aplicación React (port 80)
+- **Backend Layer**: API REST desarrollada en Django (desplegada en Railway)
+- **Database Layer**: PostgreSQL con gestión de múltiples entidades del sistema médico
+
 ## 📋 Características Principales
 
 - ✅ **Autenticación JWT** con refresh automático
