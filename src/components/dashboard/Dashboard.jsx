@@ -16,7 +16,6 @@ import BadgeIcon from '@mui/icons-material/Badge';
 import WorkIcon from '@mui/icons-material/Work';
 import AssignmentIcon from '@mui/icons-material/Assignment';
 import PendingActionsIcon from '@mui/icons-material/PendingActions';
-import PermissionsDebug from '../common/PermissionsDebug';
 
 const allModules = [
   {
@@ -95,7 +94,6 @@ export default function Dashboard() {
       p: 4,
       bgcolor: 'background.default'
     }}>
-      <PermissionsDebug />
       <Box sx={{ maxWidth: 1400, width: '100%' }}>
         <Typography 
           variant="h4" 
